@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Table Interactive - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    body { margin: 0; padding: 0; font-family: 'Lato', sans-serif; background-color: #1a1a2e; color: #eee; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+    header { background-color: #0f3460; padding: 25px 20px; text-align: center; border-bottom: 4px solid #e94560; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    h1 { margin: 0; color: #fff; font-family: 'Playfair Display', serif; font-size: 2.2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.4); }
+    p.subtitle { color: #ccc; margin-top: 5px; font-weight: 300; font-size: 1rem; }
+    .nav-back { position: absolute; top: 25px; left: 20px; text-decoration: none; color: #fff; background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 0.3s; border: 1px solid rgba(255,255,255,0.2); }
+    .nav-back:hover { background: #e94560; border-color: #e94560; transform: translateX(-5px); }
+
+    .game-wrapper { display: flex; justify-content: center; align-items: flex-start; flex-wrap: wrap; gap: 40px; padding: 40px 20px; flex: 1; }
+    .control-panel { background: #16213e; padding: 25px; border-radius: 12px; text-align: center; border: 2px solid #0f3460; min-width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+    .turn-indicator { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; padding: 10px; border-radius: 8px; background: #e94560; color: white; transition: background 0.3s; }
+    
+    .dice-container { display: flex; gap: 15px; justify-content: center; margin-bottom: 25px; height: 80px; }
+    .dice { font-size: 4.5rem; line-height: 1; color: #fff; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
+    .rolling { animation: rollAnimation 0.5s infinite; }
+    @keyframes rollAnimation { 0% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(90deg) scale(1.1); } 50% { transform: rotate(180deg) scale(0.9); } 75% { transform: rotate(270deg) scale(1.1); } 100% { transform: rotate(360deg) scale(1); } }
+
+    .btn-action { background-color: #4CAF50; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; width: 100%; font-size: 1rem; margin-bottom: 10px; }
+    .btn-action:hover { background-color: #45a049; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0,255,0,0.2); }
+    .btn-turn { background-color: #0f3460; border: 1px solid #4CAF50;}
+    .btn-turn:hover { background-color: #1a4f8f; }
+
+    .board { width: 720px; height: 560px; background-color: #d2a679; background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px); border: 20px solid #4a2e1b; border-radius: 10px; display: flex; padding: 5px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 20px 40px rgba(0,0,0,0.6); }
+    .board-half { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .board-row { display: flex; justify-content: space-around; height: 250px; }
+    .board-bar { width: 40px; background-color: #4a2e1b; margin: 0 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 4px; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); }
+
+    .point { position: relative; width: 45px; height: 240px; display: flex; align-items: center; z-index: 1; }
+    .point-top { flex-direction: column; }
+    .point-bottom { flex-direction: column-reverse; }
+    .point::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; }
+    .pt-dark::before { background-color: #8b0000; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); } 
+    .pt-light::before { background-color: #222; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); } 
+    .point-top::before { clip-path: polygon(50% 100%, 0 0, 100% 0); }
+    .point-bottom::before { clip-path: polygon(50% 0, 0 100%, 100% 100%); }
+
+    .checker { width: 38px; height: 38px; border-radius: 50%; margin: 1px 0; cursor: grab; flex-shrink: 0; position: relative; }
+    .checker.white { background: radial-gradient(circle at 30% 30%, #fff, #d4d4d4); border: 2px solid #aaa; box-shadow: 2px 3px 5px rgba(0,0,0,0.5), inset 0 0 5px rgba(255,255,255,0.8); }
+    .checker.black { background: radial-gradient(circle at 30% 30%, #555, #111); border: 2px solid #000; box-shadow: 2px 3px 5px rgba(0,0,0,0.7), inset 0 0 5px rgba(255,255,255,0.2); }
+    .checker:active { cursor: grabbing; transform: scale(1.1); z-index: 100; }
+
+    .out-area { width: 120px; background-color: #16213e; border: 2px dashed #0f3460; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px; border-radius: 8px; color: #aaa; font-size: 0.9rem; text-align: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+    footer { background-color: #0f3460; color: #aaa; text-align: center; padding: 20px; margin-top: auto; font-size: 0.85rem; border-top: 2px solid #e94560; }
+
+    @media (max-width: 900px) { .nav-back { position: static; display: inline-block; margin-bottom: 20px; } header { text-align: left; padding-bottom: 20px; } .game-wrapper { flex-direction: column; align-items: center; } .board { width: 100%; height: 450px; border-width: 10px; } .checker { width: 28px; height: 28px; } }
+</style>
+</head>
+<body>
+
+<header>
+    <a href="jocuri.html" class="nav-back">⬅ Înapoi la Jocuri</a>
+    <h1>Table Virtuale</h1>
+    <p class="subtitle">Aruncă zarurile, trage piesele (Drag & Drop) și joacă la același ecran!</p>
+</header>
+
+<div class="game-wrapper">
+    <div class="control-panel">
+        <div class="turn-indicator" id="turn-indicator" style="background: #e94560;">Rândul Jucătorului ALB</div>
+        <div class="dice-container">
+            <div class="dice" id="d1">&#x2685;</div>
+            <div class="dice" id="d2">&#x2685;</div>
+        </div>
+        <button class="btn-action" onclick="rollDice()">🎲 Dă cu zarurile</button>
+        <button class="btn-action btn-turn" onclick="schimbaRandul()">Schimbă Rândul 🔄</button>
+        <p style="font-size: 0.8rem; margin-top:15px; color:#aaa; line-height: 1.5;">* Piesele se pot muta liber.<br>* Dreapta: Piese scoase.</p>
+    </div>
+
+    <div class="board">
+        <div class="board-half">
+            <div class="board-row top">
+                <div class="point point-top pt-dark" id="pt-13"></div><div class="point point-top pt-light" id="pt-14"></div><div class="point point-top pt-dark" id="pt-15"></div><div class="point point-top pt-light" id="pt-16"></div><div class="point point-top pt-dark" id="pt-17"></div><div class="point point-top pt-light" id="pt-18"></div>
+            </div>
+            <div class="board-row bottom">
+                <div class="point point-bottom pt-light" id="pt-12"></div><div class="point point-bottom pt-dark" id="pt-11"></div><div class="point point-bottom pt-light" id="pt-10"></div><div class="point point-bottom pt-dark" id="pt-9"></div><div class="point point-bottom pt-light" id="pt-8"></div><div class="point point-bottom pt-dark" id="pt-7"></div>
+            </div>
+        </div>
+        
+        <div class="board-bar" id="bar"></div>
+
+        <div class="board-half">
+            <div class="board-row top">
+                <div class="point point-top pt-dark" id="pt-19"></div><div class="point point-top pt-light" id="pt-20"></div><div class="point point-top pt-dark" id="pt-21"></div><div class="point point-top pt-light" id="pt-22"></div><div class="point point-top pt-dark" id="pt-23"></div><div class="point point-top pt-light" id="pt-24"></div>
+            </div>
+            <div class="board-row bottom">
+                <div class="point point-bottom pt-light" id="pt-6"></div><div class="point point-bottom pt-dark" id="pt-5"></div><div class="point point-bottom pt-light" id="pt-4"></div><div class="point point-bottom pt-dark" id="pt-3"></div><div class="point point-bottom pt-light" id="pt-2"></div><div class="point point-bottom pt-dark" id="pt-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="out-area" id="out-area"><b style="color:#fff; margin-bottom: 10px;">Piese Scoase</b></div>
+</div>
+
+<footer>© 2026 Constantin Lupu - Zona de Divertisment</footer>
+
+<script>
+    const diceFaces = ['&#x2680;', '&#x2681;', '&#x2682;', '&#x2683;', '&#x2684;', '&#x2685;'];
+    const initialSetup = { 'pt-1': { color: 'white', count: 2 }, 'pt-12': { color: 'white', count: 5 }, 'pt-17': { color: 'white', count: 3 }, 'pt-19': { color: 'white', count: 5 }, 'pt-24': { color: 'black', count: 2 }, 'pt-13': { color: 'black', count: 5 }, 'pt-8': { color: 'black', count: 3 }, 'pt-6': { color: 'black', count: 5 } };
+    let checkerIdCounter = 0; let turnAlb = true;
+
+    window.onload = () => {
+        for (const [pointId, data] of Object.entries(initialSetup)) {
+            const pointEl = document.getElementById(pointId);
+            if (pointEl) {
+                for (let i = 0; i < data.count; i++) {
+                    const checker = document.createElement('div');
+                    checker.classList.add('checker', data.color);
+                    checker.draggable = true;
+                    checker.id = 'chk-' + checkerIdCounter++;
+                    pointEl.appendChild(checker);
+                }
+            }
+        }
+    };
+
+    function rollDice() {
+        const d1 = document.getElementById("d1"); const d2 = document.getElementById("d2");
+        d1.classList.add("rolling"); d2.classList.add("rolling");
+        setTimeout(() => {
+            d1.classList.remove("rolling"); d2.classList.remove("rolling");
+            d1.innerHTML = diceFaces[Math.floor(Math.random() * 6)];
+            d2.innerHTML = diceFaces[Math.floor(Math.random() * 6)];
+        }, 500);
+    }
+
+    function schimbaRandul() {
+        turnAlb = !turnAlb; const indicator = document.getElementById("turn-indicator");
+        if(turnAlb) { indicator.innerText = "Rândul Jucătorului ALB"; indicator.style.background = "#e94560"; } 
+        else { indicator.innerText = "Rândul Jucătorului NEGRU"; indicator.style.background = "#333"; }
+    }
+
+    let draggedItem = null;
+    document.addEventListener("dragstart", (e) => { if (e.target.classList.contains("checker")) { draggedItem = e.target; setTimeout(() => e.target.style.opacity = "0.4", 0); } });
+    document.addEventListener("dragend", (e) => { if (e.target.classList.contains("checker")) { setTimeout(() => { e.target.style.opacity = "1"; draggedItem = null; }, 0); } });
+    document.addEventListener("dragover", (e) => { e.preventDefault(); });
+    document.addEventListener("drop", (e) => { e.preventDefault(); if (draggedItem) { const dropZone = e.target.closest(".point, .board-bar, .out-area"); if (dropZone) dropZone.appendChild(draggedItem); } });
+</script>
+</body>
+</html>

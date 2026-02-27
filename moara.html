@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moara Vlăsiei - Galerie Interactivă</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; padding: 0;
+        font-family: 'Lato', sans-serif;
+        background-color: #f4f7f6; 
+        color: #333; 
+        height: 100vh; 
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; 
+    }
+
+    header {
+        background-color: #ffffff;
+        padding: 15px 0;
+        text-align: center;
+        flex-shrink: 0;
+        border-bottom: 1px solid #ddd;
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+        font-family: 'Lato', sans-serif;
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 700;
+        color: #222;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    .profile-mini {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        vertical-align: middle;
+        margin-right: 10px;
+        border: 2px solid #00bcd4;
+    }
+
+    .showcase-container {
+        display: flex;
+        flex: 1; 
+        height: 100%; 
+        overflow: hidden;
+    }
+
+    .display-area {
+        flex: 1; 
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+        transition: background-image 0.5s ease-in-out;
+        background-color: #e0e0e0; 
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 30%, rgba(0,0,0,0.85) 100%); 
+        z-index: 1;
+        pointer-events: none; 
+    }
+
+    .text-content {
+        position: absolute;
+        bottom: 40px; left: 40px;
+        max-width: 30%; 
+        min-width: 350px; 
+        max-height: 40vh; 
+        overflow-y: auto; 
+        z-index: 2;
+        padding-right: 20px;
+    }
+
+    .text-content::-webkit-scrollbar { width: 5px; }
+    .text-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 5px; }
+    .text-content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.7); }
+
+    .text-content h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.5rem; 
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #fff; 
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.9);
+        animation: fadeIn 0.8s ease;
+    }
+
+    .text-content p {
+        font-size: 1.1rem;
+        background-color: transparent; 
+        color: #f8f8f8; 
+        padding: 0;
+        padding-left: 15px;
+        border-left: 3px solid #00bcd4;
+        border-radius: 0;
+        animation: slideIn 0.8s ease;
+        line-height: 1.6;
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.95); 
+    }
+
+    .sidebar {
+        width: 320px;
+        background-color: #ffffff; 
+        display: flex;
+        flex-direction: column; 
+        border-left: 1px solid #eee;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.03);
+    }
+    
+    .nav-buttons-area {
+        padding: 20px 20px 15px 20px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .btn-nav {
+        display: block; 
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 50px;
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        font-size: 0.9rem;
+        transition: 0.3s;
+        text-transform: uppercase;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-home { background-color: #607d8b; }
+    .btn-home:hover { background-color: #455a64; }
+
+    .btn-back { background-color: #00bcd4; }
+    .btn-back:hover { background-color: #0097a7; }
+
+    .thumbnail-list {
+        flex: 1; 
+        overflow-y: auto; 
+        padding: 20px;
+    }
+
+    .thumbnail-list::-webkit-scrollbar { width: 6px; }
+    .thumbnail-list::-webkit-scrollbar-track { background: #f1f1f1; }
+    .thumbnail-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    .thumbnail-list::-webkit-scrollbar-thumb:hover { background: #999; }
+
+    .thumbnail-card {
+        cursor: pointer;
+        margin-bottom: 20px;
+        transition: transform 0.2s, opacity 0.2s;
+        opacity: 0.7;
+    }
+
+    .thumbnail-card:hover, .thumbnail-card.active {
+        opacity: 1;
+        transform: scale(1.03);
+    }
+
+    .thumbnail-card img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .thumbnail-card.active img { border-color: #00bcd4; }
+
+    .thumb-title {
+        font-size: 0.9rem; margin-top: 8px; color: #444; text-align: center; font-weight: bold;
+    }
+
+    .main-footer {
+        background-color: #ffffff;
+        color: #666;
+        text-align: center;
+        padding: 12px 10px;
+        font-size: 0.85rem;
+        border-top: 1px solid #ddd;
+        flex-shrink: 0; 
+    }
+
+    .main-footer span {
+        display: block;
+        margin-top: 5px;
+        color: #0097a7; 
+        font-weight: bold;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    @media (max-width: 800px) {
+        .showcase-container { flex-direction: column; }
+        
+        .display-area {
+            display: flex;
+            flex-direction: column;
+            flex: 1; 
+            position: relative;
+        }
+
+        .text-content {
+            position: absolute; 
+            bottom: 0; 
+            left: 0;
+            margin: 0;
+            max-width: 100%; 
+            min-width: 0; 
+            max-height: none;
+            height: 40%; 
+            width: 100%; 
+            padding: 15px 20px 5px 20px;
+            z-index: 5;
+        }
+
+        .text-content h2 { 
+            font-size: 1.5rem; 
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+        
+        .text-content p {
+            font-size: 0.95rem; 
+            border: none;
+            margin-top: 10px;
+            padding: 0;
+        }
+
+        .text-content::-webkit-scrollbar { width: 4px; }
+
+        .sidebar { 
+            width: 100%; 
+            height: auto; 
+            flex: none;
+            padding: 10px; 
+            border-left: none;
+            border-top: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        .nav-buttons-area { 
+            display: flex; 
+            gap: 10px; 
+            padding: 0 10px 10px 10px;
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+        .btn-nav { width: 50%; font-size: 0.8rem; margin-bottom: 0; padding: 8px;}
+
+        .thumbnail-list {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 5px 10px 15px 10px; 
+            gap: 12px;
+            scroll-behavior: smooth; 
+        }
+
+        .thumbnail-list::-webkit-scrollbar { height: 4px; }
+        .thumbnail-list::-webkit-scrollbar-thumb { background: #bbb; border-radius: 4px;}
+
+        .thumbnail-card { 
+            width: 130px; 
+            flex: none; 
+            margin-bottom: 0;
+        }
+
+        .thumbnail-card img { height: 85px; }
+        
+        .thumb-title {
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; 
+        }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <img src="Imagini/jpg 0.0.jpg" class="profile-mini" alt="Profile">
+    <h1>Galerie Moara Vlăsiei</h1>
+</header>
+
+<div class="showcase-container">
+    
+    <div class="display-area" id="main-bg">
+        <div class="overlay"></div>
+        <div class="text-content">
+            <h2 id="main-title"></h2>
+            <p id="main-desc"></p>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        
+        <div class="nav-buttons-area">
+            <a href="index.html" class="btn-nav btn-home"><i class="fas fa-home"></i> Acasă</a>
+            <a href="despre.html" class="btn-nav btn-back"><i class="fas fa-arrow-left"></i> Despre mine</a>
+        </div>
+
+        <div class="thumbnail-list">
+            
+            <div class="thumbnail-card active" onclick="schimbaPoza('Imagini/Moara Vlasiei/png 1.png', 'Moara Vlasiei', 'Comuna Moara Vlăsiei (cunoscută în trecut sub numele de Moara Săracă), din județul Ilfov, este atestată documentar pentru prima dată în anul 1622. Prima atestare: Anul 1622 marchează prima mențiune scrisă a așezării. În același an, pe 20 ianuarie, satul Căciulați (care aparține astăzi de aceeași comună) este menționat oficial într-un hrisov domnesc emis de Radu Mihnea. Schimbarea numelui: Localitatea a purtat numele de Moara Săracă timp de secole. Denumirea a fost schimbată oficial în Moara Vlăsiei (făcând referire la istoricul Codru al Vlăsiei) abia la 17 februarie 1968, odată cu reforma administrativ-teritorială a României.', this)">
+                <img src="Imagini/Moara Vlasiei/png 1.png" alt="Poza 1">
+                <div class="thumb-title">Imaginea 1</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara Vlasiei/jpg 1.jpg', 'Palatul Ghica', 'Palatul Familiei Ghica din Căciulați a fost construit în anii 1830, în perioada domnitorului Alexandru Dimitrie Ghica. Scopul acestuia era de reședință voievodală, el fiind ultimul urmaș al familiei Ghica care a urcat pe tron.', this)">
+                <img src="Imagini/Moara Vlasiei/jpg 1.jpg" alt="Poza 2">
+                <div class="thumb-title">Imaginea 2</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara Vlasiei/jpg 2.jpg', 'Adormirea Maicii Domnului', 'Biserica „Adormirea Maicii Domnului” este construită în formă de corabie, cu o singură turlă și cu iconostasul din cărămidă. Pictura realizată de Gheorghe Ioanid este în stare bună și este executată în ulei.', this)">
+                <img src="Imagini/Moara Vlasiei/jpg 2.jpg" alt="Poza 3">
+                <div class="thumb-title">Imaginea 3</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara Vlasiei/jpg 3.jpg', 'Biserica Moara Săracă', 'Actuala construcție a fost ridicată între anii 1907 și 1908. Ea a fost zidită din temelie pentru a înlocui o biserică mai veche, din cărămidă. Edificiul a fost sfințit pe 28 decembrie 1908, primind hramul „Adormirea Maicii Domnului”.', this)">
+                <img src="Imagini/Moara Vlasiei/jpg 3.jpg" alt="Poza 4">
+                <div class="thumb-title">Imaginea 4</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara Vlasiei/webp 4.webp', 'Biserica Canela', 'Biserica Canela din comuna Moara Vlăsiei este un lăcaș de cult ortodox cu hramul Sfântul Mare Mucenic Dimitrie, Izvorâtorul de Mir. Aceasta funcționează ca parohie în cadrul Protoieriei Ilfov Nord.', this)">
+                <img src="Imagini/Moara Vlasiei/webp 4.webp" alt="Poza 5">
+                <div class="thumb-title">Imaginea 5</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara Vlasiei/jpg 5.jpg', 'Biserica Pașcani', 'Biserica din satul Pașcani, comuna Moara Vlăsiei, cu hramurile „Adormirea Maicii Domnului” și „Sfântul Ierarh Nicolae”, este un lăcaș de cult ce deservește comunitatea locală.', this)">
+                <img src="Imagini/Moara Vlasiei/jpg 5.jpg" alt="Poza 6">
+                <div class="thumb-title">Imaginea 6</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara Vlasiei/jpg 6.jpg', 'Mănăstirea Căldărușani', 'Mănăstirea Căldărușani este una dintre cele mai mari și vechi mănăstiri ortodoxe din Muntenia. Zidită între anii 1637-1638, fiind înzestrată cu multe daruri de către domnitorul Matei Basarab.', this)">
+                <img src="Imagini/Moara Vlasiei/jpg 6.jpg" alt="Poza 7">
+                <div class="thumb-title">Imaginea 7</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara Vlasiei/jpg 7.jpg', 'Mănăstirea Vlad Țepeș', 'Mănăstirea Snagov, unde legenda spune că acesta ar fi înmormântat. Situată pe o insulă în mijlocul lacului Snagov, la aproximativ 40 km nord de București.', this)">
+                <img src="Imagini/Moara Vlasiei/jpg 7.jpg" alt="Poza 8">
+                <div class="thumb-title">Imaginea 8</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara vlasiei/jpg 8.jpg', 'Mănăstirea Sitaru', 'Întemeierea Mănăstirii ”Sfântul Nicolae” Sitaru poate fi așezată în jurul anilor 1626-1631. Ctitorul mănăstirii a fost boierul Papa Greceanu.', this)">
+                <img src="Imagini/Moara Vlasiei/jpg 8.jpg" alt="Poza 9">
+                <div class="thumb-title">Imaginea 9</div>
+            </div>
+
+            <div class="thumbnail-card" onclick="schimbaPoza('Imagini/Moara Vlasiei/jpg 9.jpg', 'Primaria Moara Vlasiei', 'Clădirea veche are o arhitectură tradițională românească și datează din anii 1920-1930.', this)">
+                <img src="Imagini/Moara Vlasiei/jpg 9.jpg" alt="Poza 10">
+                <div class="thumb-title">Imaginea 10</div>
+            </div>
+
+        </div> 
+    </div>
+</div>
+
+<footer class="main-footer">
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span> Toate drepturile rezervate.
+</footer>
+
+<script>
+    function schimbaPoza(imagine, titlu, descriere, element) {
+        var displayArea = document.getElementById('main-bg');
+        displayArea.style.backgroundImage = "url('" + imagine + "')";
+        
+        document.getElementById('main-title').innerText = titlu;
+        document.getElementById('main-desc').innerText = descriere;
+
+        var textContent = document.querySelector('.text-content');
+        if(textContent) textContent.scrollTop = 0;
+
+        var clona = textContent.cloneNode(true);
+        textContent.parentNode.replaceChild(clona, textContent);
+
+        var thumbnails = document.querySelectorAll('.thumbnail-card');
+        thumbnails.forEach(function(card) {
+            card.classList.remove('active');
+        });
+        
+        if(element) {
+            element.classList.add('active');
+            
+            if (window.innerWidth <= 800) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+    }
+
+    window.onload = function() {
+        var primaPoza = document.querySelector('.thumbnail-card');
+        if(primaPoza) {
+            primaPoza.click();
+        }
+    };
+</script>
+
+</body>
+</html>

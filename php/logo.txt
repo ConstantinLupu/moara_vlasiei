@@ -1,0 +1,65 @@
+CREATE DATABASE netbook_db;
+
+USE netbook_db;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+-- Adaugă un utilizator de test
+INSERT INTO users (username, password) VALUES ('admin', 'password');
+2. Scriptul PHP pentru autentificare
+Acum trebuie să scriem un script PHP care să verifice datele trimise de la client (numele de utilizator și parola) și să le compare cu cele din baza de date.
+
+Crează un fișier numit login.php.
+
+php
+Copiază
+Editează
+<?php
+// Conectare la baza de date MySQL
+$servername = "localhost";
+$username = "root";  // Username-ul bazei de date
+$password = "";      // Parola bazei de date
+$dbname = "netbook_db";  // Numele bazei de date
+
+// Creează conexiunea
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Verifică conexiunea
+if ($conn->connect_error) {
+    die("Conectare eșuată: " . $conn->connect_error);
+}
+
+// Verificăm dacă datele au fost trimise prin POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Preia datele din cererea POST
+    $input_username = $_POST["username"];
+    $input_password = $_POST["password"];
+
+    // Găsește utilizatorul în baza de date
+    $sql = "SELECT * FROM users WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $input_username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // Utilizatorul există, verifică parola
+        $row = $result->fetch_assoc();
+        if ($row["password"] === $input_password) {
+            echo "Autentificare reușită!";
+        } else {
+            echo "Parola incorectă!";
+        }
+    } else {
+        echo "Utilizator inexistent!";
+    }
+
+    // Închide conexiunea
+    $stmt->close();
+    $conn->close();
+}
+?>

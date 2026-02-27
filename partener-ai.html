@@ -1,0 +1,319 @@
+partener-ai.html
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Partener AI - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* --- 1. STILURI DE BAZA --- */
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Lato', sans-serif;
+        background-image: url('Imagini/Deshboard/avif\ 1.avif'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* --- 2. HEADER --- */
+    header {
+        background-color: rgba(51, 51, 51, 0.9);
+        color: white;
+        padding-top: 60px;
+        padding-bottom: 40px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        position: absolute;
+        top: -75px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .header-spacer { margin-top: 80px; position: relative; }
+
+    h1 {
+        font-family: 'Lato', sans-serif;
+        font-size: 3rem;
+        margin: 10px 0 5px 0;
+        font-weight: 400;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; }
+
+    /* --- 3. MENIU NAVIGARE (HAMBURGER) --- */
+    .navbar { 
+        background-color: rgba(144, 164, 174, 0.9); 
+        padding: 10px 20px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        position: sticky; 
+        top: 0; 
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a { 
+        color: #333; 
+        text-decoration: none; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 0.9rem; 
+        padding: 8px 15px;
+        display: inline-block; 
+        transition: 0.3s; 
+        border-radius: 4px;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    /* Pastram "Experiment" activ ca sa stie utilizatorul unde se afla in meniu */
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+    }
+    .bar {
+        height: 3px;
+        width: 25px;
+        background-color: #333;
+        margin: 3px 0;
+        border-radius: 3px;
+        transition: 0.4s;
+    }
+
+    /* --- 4. CONTINUT ARTICOL --- */
+    .main-container { 
+        max-width: 900px; /* Mai ingust pentru o citire mai usoara */
+        margin: 60px auto; 
+        padding: 0 20px; 
+        text-align: left; 
+        flex: 1; 
+    }
+    
+    .back-btn {
+        display: inline-block;
+        color: #fff;
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        transition: 0.3s;
+    }
+    .back-btn:hover { color: #ddd; transform: translateX(-5px); }
+
+    .article-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        padding: 40px 50px;
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .article-card h2 {
+        font-family: 'Playfair Display', serif; 
+        font-size: 2.2rem; 
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 25px;
+        border-bottom: 3px solid #90a4ae;
+        padding-bottom: 15px;
+    }
+
+    /* Video integrat in articol */
+    .article-video-wrapper {
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        background: #000;
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        height: 0;
+    }
+
+    .article-video-wrapper video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .article-content p {
+        font-size: 1.1rem;
+        color: #444;
+        margin-bottom: 20px;
+        line-height: 1.8;
+    }
+
+    .article-content h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-top: 35px;
+        margin-bottom: 15px;
+    }
+
+    .highlight-box {
+        background-color: #f8f9fa;
+        border-left: 5px solid #90a4ae;
+        padding: 20px;
+        margin: 30px 0;
+        font-style: italic;
+        color: #555;
+        border-radius: 0 8px 8px 0;
+    }
+
+    /* --- 5. FOOTER --- */
+    footer {
+        background-color: rgba(34, 34, 34, 0.9);
+        color: #bbb;
+        text-align: center;
+        padding: 30px 15px;
+        margin-top: 60px;
+        font-size: 0.9rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    footer span {
+        color: #fff;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    /* --- ADAPTARE PENTRU TELEFON (RESPONSIVE) --- */
+    @media (max-width: 900px) { 
+        h1 { font-size: 2rem; }
+        .subtitle { font-size: 1rem; }
+        .article-card { padding: 25px 20px; }
+        .article-card h2 { font-size: 1.8rem; }
+
+        .navbar { display: block; text-align: left; padding: 15px 20px; min-height: 50px; }
+        .menu-toggle { display: flex; }
+        .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: rgba(0,0,0,0.05); border-radius: 4px; }
+        .nav-links.active { display: flex; }
+        .nav-links a { width: 100%; text-align: center; padding: 15px; margin: 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .nav-links a:last-child { border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header-spacer">
+    <header>
+        <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu" onerror="this.src='https://via.placeholder.com/150'">
+        <h1>Constantin Lupu</h1>
+        <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html" class="active">Experiment</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<div class="main-container">
+    <a href="experiment.html" class="back-btn"><i class="fas fa-arrow-left"></i> Înapoi la Laborator Web</a>
+
+    <div class="article-card">
+        <h2>Inteligența Artificială: Viitorul Dezvoltării Personale</h2>
+        
+        <div class="article-video-wrapper">
+            <video controls autoplay muted loop>
+                <source src="video/Mesaj-AI.mp 4.mp4" type="video/mp4">
+                Browser-ul tău nu suportă formatul video.
+            </video>
+        </div>
+
+        <div class="article-content">
+            <p><strong>Dezvoltarea personală necesită adesea un partener de dialog pentru a testa idei. AI-ul este un partener de antrenament excelent. Nu obosește, nu te judecă pentru întrebările puse și are o bază de date vastă din care poate genera perspective noi. Îți permite să explorezi scenarii, să îți dezvolți argumentația și să îți stimulezi creativitatea.</strong></p>
+
+            <p>Inteligența Artificială nu este doar o tehnologie de dragul tehnologiei, ci se transformă rapid în cel mai puternic partener pentru evoluția umană. Scopul său nu este să înlocuiesc omul, ci să îi fie un „exoschelet intelectual” – o unealtă care îi amplifică mintea și îi extinde capacitățile.</p>
+
+            <h3>1. Acces personalizat la cunoașterea universală</h3>
+            <p>În trecut, dacă voiai să înveți un domeniu nou (cum ar fi programarea web sau crearea unor site-uri interactive), trebuia să citești manuale greoaie sau să cauți ore în șir. Astăzi, AI-ul democratizează educația. Acționează ca un tutore personal, disponibil 24/7, capabil să îți explice concepte complexe exact la nivelul tău de înțelegere, adaptându-se ritmului tău de învățare.</p>
+
+            <h3>2. Eficiență în culegerea și sinteza informațiilor</h3>
+            <p>Trăim în era suprasaturării informaționale. Timpul nostru este limitat, dar cantitatea de date este infinită. Aici intervine AI-ul ca un „filtru inteligent”. Capacitatea de a scana mii de pagini în câteva secunde și de a extrage esența îți redă cel mai de preț element: timpul. Astfel, tu folosești acel timp pentru a analiza, a înțelege și a aplica informația.</p>
+
+            <h3>3. Eliminarea barierelor tehnice</h3>
+            <p>Când AI-ul preia sarcinile repetitive, tehnice sau plictisitoare, mintea umană este eliberată pentru a se concentra pe ceea ce face cel mai bine: viziune, creativitate și empatie. AI-ul se ocupă de „cum” se face un lucru, în timp ce omul decide „ce” se face și „de ce”.</p>
+
+            <div class="highlight-box">
+                <i class="fas fa-quote-left" style="font-size: 1.5rem; color: #90a4ae; margin-bottom: 10px; display: block;"></i>
+                <strong>O notă de realism:</strong> Deși capacitatea algoritmilor de a procesa și livra informații este vastă, AI-ul rămâne doar busola. Omul este exploratorul. Informația pe care o generează tehnologia trebuie mereu trecută prin filtrul gândirii critice, al intuiției și al valorilor umane – trăsături pe care nicio mașinărie nu le poate reproduce cu adevărat.
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script>
+    /* -------------------------------------------
+       FUNCȚIONALITATE MENIU HAMBURGER
+    ------------------------------------------- */
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+    }
+</script>
+
+</body>
+</html>

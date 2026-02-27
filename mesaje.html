@@ -1,0 +1,255 @@
+mesaje.html
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesaje - Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* --- STILURI DE BAZA (Dark Mode) --- */
+    :root {
+        --bg-dark: #1e1e2f;
+        --card-dark: #27293d;
+        --sidebar-bg: #22252a;
+        --text-white: #ffffff;
+        --text-gray: #9a9a9a;
+        --accent-blue: #1d8cf8;
+        --accent-green: #00f2c3;
+        --accent-red: #fd5d93;
+    }
+
+    * { box-sizing: border-box; outline: none; }
+    body { margin: 0; font-family: 'Roboto', sans-serif; background-color: var(--bg-dark); color: var(--text-white); display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); position: fixed; height: 100%; }
+    .profile-section { text-align: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+    .profile-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-blue); object-fit: cover; margin-bottom: 10px; }
+    .profile-name { font-size: 1.2rem; font-weight: 500; margin: 0; }
+    .profile-role { color: var(--text-gray); font-size: 0.9rem; margin-top: 5px; }
+    
+    .nav-links { list-style: none; padding: 0; margin: 0; flex: 1; }
+    .nav-links li { margin-bottom: 10px; }
+    .nav-links a { display: flex; align-items: center; color: var(--text-gray); text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.3s; font-size: 0.95rem; }
+    .nav-links a:hover { background-color: rgba(255,255,255,0.1); color: white; }
+    .nav-links i { margin-right: 15px; font-size: 1.1rem; width: 20px; text-align: center;}
+    
+    /* Active Link - Mesaje */
+    .nav-links a.active { background: linear-gradient(45deg, #fd5d93, #ec250d); color: white; box-shadow: 0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px rgba(253, 93, 147, 0.4); }
+    .nav-links a.btn-back { background: linear-gradient(45deg, #ff8d72, #ff6491); color: white; margin-bottom: 20px; }
+    .btn-logout { background-color: #d63031; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; transition: 0.3s; text-decoration: none; }
+
+    /* --- STILURI SPECIFICE MESAJE --- */
+    .main-content { margin-left: 260px; padding: 30px; width: 100%; flex: 1; }
+    .page-header h2 { font-size: 2rem; margin-bottom: 30px; }
+
+    /* Lista de mesaje */
+    .inbox-container {
+        background-color: var(--card-dark);
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        overflow: hidden;
+    }
+
+    .message-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .message-row:hover { background-color: rgba(255,255,255,0.05); }
+    .message-row:last-child { border-bottom: none; }
+
+    /* Stil pentru mesaje necitite (border stanga + bold) */
+    .message-row.unread {
+        border-left: 4px solid var(--accent-green);
+        background-color: rgba(0, 242, 195, 0.05);
+    }
+    .message-row.unread .msg-sender, 
+    .message-row.unread .msg-subject { font-weight: bold; color: white; }
+
+    .msg-left { display: flex; align-items: center; gap: 15px; flex: 1; }
+    .avatar-circle { width: 40px; height: 40px; border-radius: 50%; background-color: #333; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; }
+    
+    .msg-info { display: flex; flex-direction: column; }
+    .msg-sender { font-size: 1rem; color: #ddd; }
+    .msg-subject { font-size: 0.9rem; color: var(--text-gray); margin-top: 3px; }
+
+    .msg-right { display: flex; align-items: center; gap: 20px; }
+    .msg-date { color: var(--text-gray); font-size: 0.8rem; }
+    
+    .btn-read { background-color: var(--accent-blue); border: none; padding: 8px 15px; border-radius: 20px; color: white; cursor: pointer; font-size: 0.8rem; }
+    .btn-delete { background: none; border: none; color: #fd5d93; cursor: pointer; font-size: 1.1rem; }
+    .btn-delete:hover { color: red; }
+
+    /* --- POPUP (MODAL) --- */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        display: none; /* Ascuns initial */
+        justify-content: center; align-items: center;
+        z-index: 1000;
+        animation: fadeIn 0.3s;
+    }
+    
+    .modal-content {
+        background-color: var(--card-dark);
+        width: 600px;
+        max-width: 90%;
+        border-radius: 10px;
+        padding: 30px;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .modal-header { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; }
+    .modal-title { margin: 0; font-size: 1.5rem; color: var(--accent-blue); }
+    .modal-meta { color: var(--text-gray); font-size: 0.9rem; margin-top: 5px; }
+
+    .modal-body { color: #ddd; line-height: 1.6; min-height: 100px; }
+
+    .modal-footer { margin-top: 30px; text-align: right; }
+    .btn-close { background-color: #444; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+    .btn-reply { background-color: var(--accent-green); color: black; font-weight: bold; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+</style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="profile-section">
+            <img src="Imagini/jpg 0.0.jpg" alt="Admin" class="profile-img">
+            <h3 class="profile-name">Constantin Lupu</h3>
+            <p class="profile-role">Administrator</p>
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="portofoliu.html" class="btn-back"><i class="fas fa-arrow-left"></i> Înapoi la Portofoliu</a></li>
+            
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> Panou Control</a></li>
+            <li><a href="galerie.html"><i class="fas fa-images"></i> Administrare Poze</a></li>
+            <li><a href="mesaje.html" class="active"><i class="fas fa-envelope"></i> Mesaje <span style="background:white; color:red; padding: 2px 6px; border-radius:4px; font-size:0.7em; margin-left:auto;">2</span></a></li>
+            <li><a href="#"><i class="fas fa-chart-pie"></i> Rapoarte</a></li>
+            <li><a href="setari.html"><i class="fas fa-cog"></i> Setări</a></li>
+        </ul>
+
+        <a href="index.html" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Deconectare</a>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2>Inbox Mesaje</h2>
+        </div>
+
+        <div class="inbox-container">
+            
+            <div class="message-row unread" id="msg1">
+                <div class="msg-left">
+                    <div class="avatar-circle" style="background: #e14eca;">MP</div>
+                    <div class="msg-info">
+                        <span class="msg-sender">Maria Popescu</span>
+                        <span class="msg-subject">Felicitări pentru noul site!</span>
+                    </div>
+                </div>
+                <div class="msg-right">
+                    <span class="msg-date">14:30</span>
+                    <button class="btn-read" onclick="deschideMesaj('Maria Popescu', 'Felicitări pentru site! Îmi place foarte mult designul negru, arată foarte profesional.', 'msg1')">Citește</button>
+                    <button class="btn-delete" onclick="stergeMesaj('msg1')"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+
+            <div class="message-row unread" id="msg2">
+                <div class="msg-left">
+                    <div class="avatar-circle" style="background: #1d8cf8;">II</div>
+                    <div class="msg-info">
+                        <span class="msg-sender">Ion Ionescu</span>
+                        <span class="msg-subject">Întrebare despre albumul foto</span>
+                    </div>
+                </div>
+                <div class="msg-right">
+                    <span class="msg-date">Ieri</span>
+                    <button class="btn-read" onclick="deschideMesaj('Ion Ionescu', 'Salut Constantin, am văzut poza cu munții. Unde este făcută? Aș vrea să merg și eu acolo.', 'msg2')">Citește</button>
+                    <button class="btn-delete" onclick="stergeMesaj('msg2')"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+
+            <div class="message-row" id="msg3">
+                <div class="msg-left">
+                    <div class="avatar-circle" style="background: #ff8d72;">AM</div>
+                    <div class="msg-info">
+                        <span class="msg-sender">Andrei M.</span>
+                        <span class="msg-subject">Colaborare proiect</span>
+                    </div>
+                </div>
+                <div class="msg-right">
+                    <span class="msg-date">20 Oct</span>
+                    <button class="btn-read" onclick="deschideMesaj('Andrei M.', 'Bună ziua, reprezint o firmă de turism și am dori să folosim câteva poze de pe site-ul tău. Ne putem auzi la un telefon?', 'msg3')">Citește</button>
+                    <button class="btn-delete" onclick="stergeMesaj('msg3')"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalCitire">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="titluPopup">Subiect</h3>
+                <div class="modal-meta">De la: <span id="expeditorPopup">Nume</span></div>
+            </div>
+            <div class="modal-body">
+                <p id="textMesaj">Aici apare textul...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-close" onclick="inchidePopup()">Închide</button>
+                <button class="btn-reply" onclick="raspunde()">Răspunde</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Functia care sterge mesajul din lista
+        function stergeMesaj(id) {
+            if(confirm("Ștergi acest mesaj?")) {
+                document.getElementById(id).style.display = 'none';
+            }
+        }
+
+        // Functia care deschide fereastra (Popup)
+        function deschideMesaj(nume, text, idRand) {
+            // Populam popup-ul cu datele mesajului
+            document.getElementById('titluPopup').innerText = "Mesaj de la " + nume;
+            document.getElementById('expeditorPopup').innerText = nume;
+            document.getElementById('textMesaj').innerText = text;
+            
+            // Afisam popup-ul
+            document.getElementById('modalCitire').style.display = 'flex';
+
+            // Marcam mesajul ca fiind citit (scoatem linia verde si bolduirea)
+            var rand = document.getElementById(idRand);
+            rand.classList.remove('unread');
+            rand.style.borderLeft = "none";
+        }
+
+        // Functia care inchide fereastra
+        function inchidePopup() {
+            document.getElementById('modalCitire').style.display = 'none';
+        }
+
+        // Functia de raspuns (Simulata)
+        function raspunde() {
+            alert("Funcția de răspuns prin email va fi implementată în curând!");
+            inchidePopup();
+        }
+    </script>
+
+</body>
+</html>

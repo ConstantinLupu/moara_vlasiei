@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML5 Canvas - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* --- 1. STILURI DE BAZA --- */
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Lato', sans-serif;
+        background-image: url('Imagini/Deshboard/avif\ 1.avif'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* --- 2. HEADER --- */
+    header {
+        background-color: rgba(51, 51, 51, 0.9);
+        color: white;
+        padding-top: 60px;
+        padding-bottom: 40px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        position: absolute;
+        top: -75px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .header-spacer { margin-top: 80px; position: relative; }
+
+    h1 {
+        font-family: 'Lato', sans-serif;
+        font-size: 3rem;
+        margin: 10px 0 5px 0;
+        font-weight: 400;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; }
+
+    /* --- 3. MENIU NAVIGARE (HAMBURGER) --- */
+    .navbar { 
+        background-color: rgba(144, 164, 174, 0.9); 
+        padding: 10px 20px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        position: sticky; 
+        top: 0; 
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a { 
+        color: #333; 
+        text-decoration: none; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 0.9rem; 
+        padding: 8px 15px;
+        display: inline-block; 
+        transition: 0.3s; 
+        border-radius: 4px;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+    }
+    .bar {
+        height: 3px;
+        width: 25px;
+        background-color: #333;
+        margin: 3px 0;
+        border-radius: 3px;
+        transition: 0.4s;
+    }
+
+    /* --- 4. PANOU CANVAS AVANSAT --- */
+    .main-container { 
+        max-width: 1000px; 
+        margin: 60px auto; 
+        padding: 0 20px; 
+        text-align: center; 
+        flex: 1; 
+        width: 100%;
+    }
+    
+    .back-btn {
+        display: inline-block;
+        color: #fff;
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        transition: 0.3s;
+        text-align: left;
+        width: 100%;
+    }
+    .back-btn:hover { color: #ddd; transform: translateX(-5px); }
+
+    h2.headline { 
+        font-family: 'Playfair Display', serif; 
+        font-size: 2.5rem; 
+        color: #fff; 
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+        margin-bottom: 30px; 
+    }
+
+    .canvas-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        padding: 25px;
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    /* Toolbar cu unelte */
+    .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+
+    .tools-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .tool-btn {
+        background-color: #fff;
+        color: #555;
+        border: 2px solid #ddd;
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .tool-btn:hover { background-color: #f1f1f1; border-color: #ccc; }
+    
+    /* Clasa pentru unealta activa (selectata) */
+    .tool-btn.active {
+        background-color: #1877f2;
+        color: white;
+        border-color: #1877f2;
+    }
+
+    /* Alte actiuni (Undo, Clear, Save) */
+    .action-btn {
+        background-color: #5d5d5d;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .action-btn:hover { background-color: #333; }
+    .action-btn.danger { background-color: #e74c3c; }
+    .action-btn.danger:hover { background-color: #c0392b; }
+    .action-btn.success { background-color: #27ae60; }
+    .action-btn.success:hover { background-color: #2ecc71; }
+
+    /* Control culori si grosime */
+    .settings-group {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-weight: bold;
+        color: #333;
+        border-left: 2px solid #ddd;
+        padding-left: 15px;
+    }
+
+    input[type="color"] { border: none; width: 35px; height: 35px; border-radius: 5px; cursor: pointer; padding: 0; }
+    input[type="range"] { cursor: pointer; width: 100px; }
+
+    /* Zona de desen */
+    .canvas-wrapper {
+        width: 100%;
+        overflow: hidden;
+        border-radius: 8px;
+        border: 2px solid #90a4ae;
+        background-color: #ffffff;
+    }
+
+    canvas {
+        display: block;
+        width: 100%;
+        cursor: crosshair;
+        touch-action: none; /* Previne scroll-ul pe mobil cand desenezi */
+    }
+
+    /* --- 5. FOOTER --- */
+    footer {
+        background-color: rgba(34, 34, 34, 0.9);
+        color: #bbb;
+        text-align: center;
+        padding: 30px 15px;
+        margin-top: 60px;
+        font-size: 0.9rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    footer span { color: #fff; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 900px) { 
+        h1 { font-size: 2rem; }
+        .navbar { display: block; text-align: left; padding: 15px 20px; min-height: 50px; }
+        .menu-toggle { display: flex; }
+        .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: rgba(0,0,0,0.05); border-radius: 4px; }
+        .nav-links.active { display: flex; }
+        .nav-links a { width: 100%; text-align: center; padding: 15px; margin: 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .nav-links a:last-child { border-bottom: none; }
+        
+        .toolbar { flex-direction: column; align-items: stretch; }
+        .tools-group, .settings-group { flex-wrap: wrap; justify-content: center; border-left: none; padding-left: 0;}
+    }
+</style>
+</head>
+<body>
+
+<div class="header-spacer">
+    <header>
+        <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu" onerror="this.src='https://via.placeholder.com/150'">
+        <h1>Constantin Lupu</h1>
+        <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html" class="active">Experiment</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<div class="main-container">
+    <a href="experiment.html" class="back-btn"><i class="fas fa-arrow-left"></i> Înapoi la Laborator Web</a>
+    <h2 class="headline"><i class="fas fa-palette"></i> Atelier de Desen Canvas</h2>
+
+    <div class="canvas-card">
+        
+        <div class="toolbar">
+            
+            <div class="tools-group">
+                <button class="tool-btn active" id="btnBrush" onclick="setTool('brush')">
+                    <i class="fas fa-paint-brush"></i> Pensulă
+                </button>
+                <button class="tool-btn" id="btnEraser" onclick="setTool('eraser')">
+                    <i class="fas fa-eraser"></i> Radieră
+                </button>
+            </div>
+
+            <div class="settings-group">
+                <input type="color" id="colorPicker" value="#1877f2" title="Alege Culoarea">
+                
+                <label for="brushSize" style="margin-left: 10px;">Grosime:</label>
+                <input type="range" id="brushSize" min="1" max="50" value="5">
+                <span id="brushSizeLabel">5px</span>
+            </div>
+
+            <div class="tools-group" style="border-left: 2px solid #ddd; padding-left: 15px;">
+                <button class="action-btn" onclick="undo()" title="Anulează ultima mișcare">
+                    <i class="fas fa-undo"></i> Undo
+                </button>
+                <button class="action-btn danger" onclick="clearCanvas()">
+                    <i class="fas fa-trash-alt"></i> Șterge Tot
+                </button>
+                <button class="action-btn success" onclick="saveImage()">
+                    <i class="fas fa-download"></i> Salvează
+                </button>
+            </div>
+
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="drawCanvas" width="900" height="500"></canvas>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script>
+    /* --- MENIU HAMBURGER --- */
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => { navLinks.classList.toggle('active'); });
+    }
+
+    /* ==========================================
+       LOGICA PENTRU HTML5 CANVAS AVANSAT
+       ========================================== */
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    
+    const colorPicker = document.getElementById('colorPicker');
+    const brushSize = document.getElementById('brushSize');
+    const brushSizeLabel = document.getElementById('brushSizeLabel');
+    
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let currentTool = 'brush'; // Poate fi 'brush' sau 'eraser'
+    
+    // Sistem de Undo (salvam stadiile tablei de scris intr-un Array)
+    let undoStack = [];
+
+    // --- INITIALIZARE CANVAS ---
+    function initCanvas() {
+        // Umplem fundalul cu alb ca sa nu fie transparent cand il salvam ca poza
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        
+        saveState(); // Salvam panza goala la inceput
+    }
+
+    // --- SCHIMBARE UNELTE ---
+    function setTool(tool) {
+        currentTool = tool;
+        document.getElementById('btnBrush').classList.remove('active');
+        document.getElementById('btnEraser').classList.remove('active');
+        
+        if (tool === 'brush') {
+            document.getElementById('btnBrush').classList.add('active');
+            canvas.style.cursor = 'crosshair';
+        } else if (tool === 'eraser') {
+            document.getElementById('btnEraser').classList.add('active');
+            canvas.style.cursor = 'cell'; // Schimbam cursorul pentru radiera
+        }
+    }
+
+    // --- ACTUALIZARE GROSIME ---
+    brushSize.addEventListener('input', (e) => {
+        brushSizeLabel.textContent = e.target.value + 'px';
+    });
+
+    // --- SALVARE STARE (PENTRU UNDO) ---
+    function saveState() {
+        // Punem in memorie o "poza" a tablei inainte sa incepem linia noua
+        if (undoStack.length > 20) {
+            undoStack.shift(); // Pastram doar ultimele 20 de miscari pt a nu incarca memoria
+        }
+        undoStack.push(canvas.toDataURL());
+    }
+
+    // --- FUNCTIA UNDO ---
+    function undo() {
+        if (undoStack.length > 1) {
+            undoStack.pop(); // Scoatem ultima stare
+            let previousState = undoStack[undoStack.length - 1]; // O luam pe cea dinainte
+            
+            let img = new Image();
+            img.src = previousState;
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            }
+        } else if (undoStack.length === 1) {
+            // Daca a ramas doar fundalul alb
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    // --- STERGERE TOTALA ---
+    function clearCanvas() {
+        if(confirm("Ești sigur că vrei să ștergi tot desenul?")) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            saveState(); // Salvam starea goala pentru undo
+        }
+    }
+
+    // --- DESCARCARE POZA ---
+    function saveImage() {
+        const link = document.createElement('a');
+        link.download = 'desenul-meu.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    // --- CALCUL POZITIE MOUSE / TOUCH (Rezolva scalarea ecranului) ---
+    function getPos(evt) {
+        var rect = canvas.getBoundingClientRect();
+        var scaleX = canvas.width / rect.width;   
+        var scaleY = canvas.height / rect.height; 
+        
+        let clientX = evt.clientX;
+        let clientY = evt.clientY;
+
+        // Daca este touch event
+        if(evt.touches && evt.touches.length > 0) {
+            clientX = evt.touches[0].clientX;
+            clientY = evt.touches[0].clientY;
+        }
+
+        return [
+            (clientX - rect.left) * scaleX,
+            (clientY - rect.top) * scaleY
+        ];
+    }
+
+    // --- LOGICA PRINCIPALA DE DESENARE ---
+    function startDrawing(e) {
+        isDrawing = true;
+        [lastX, lastY] = getPos(e);
+        saveState(); // Salvam starea INAINTE de a incepe o linie noua
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault(); // Previne scroll-ul pe mobil
+        
+        const [currentX, currentY] = getPos(e);
+
+        ctx.lineWidth = brushSize.value;
+
+        // Daca e radiera, desenam cu ALB (culoarea de fundal). Daca e pensula, folosim culoarea aleasa.
+        if (currentTool === 'eraser') {
+            ctx.strokeStyle = '#ffffff'; 
+        } else {
+            ctx.strokeStyle = colorPicker.value;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(currentX, currentY);
+        ctx.stroke();
+
+        [lastX, lastY] = [currentX, currentY];
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+    }
+
+    // --- EVENT LISTENERS ---
+    // Mouse
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    // Touch (Telefoane si Tablete)
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchcancel', stopDrawing);
+
+    // Initializare
+    window.onload = initCanvas;
+
+</script>
+
+</body>
+</html>

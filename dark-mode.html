@@ -1,0 +1,247 @@
+dark-mode.html
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dark Mode - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* =========================================
+       1. VARIABILE CSS PENTRU TEME (LIGHT / DARK)
+       ========================================= */
+    :root {
+        /* Tema de bază (Light Mode) */
+        --text-color: #333;
+        --text-muted: #666;
+        --bg-color: #ffffff;
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --header-bg: rgba(51, 51, 51, 0.9);
+        --nav-bg: rgba(144, 164, 174, 0.9);
+        --border-color: rgba(255, 255, 255, 0.5);
+        --overlay-color: rgba(255, 255, 255, 0); /* Transparent pe light */
+    }
+
+    .dark-theme {
+        /* Suprascriem culorile pentru Dark Mode */
+        --text-color: #f1f1f1;
+        --text-muted: #aaaaaa;
+        --bg-color: #121212;
+        --card-bg: rgba(30, 30, 30, 0.95);
+        --header-bg: rgba(15, 15, 15, 0.95);
+        --nav-bg: rgba(25, 25, 25, 0.95);
+        --border-color: rgba(100, 100, 100, 0.5);
+        --overlay-color: rgba(0, 0, 0, 0.6); /* Întunecăm imaginea de fundal */
+    }
+
+    /* --- 2. STILURI DE BAZA --- */
+    * { box-sizing: border-box; transition: background-color 0.4s ease, color 0.4s ease; }
+    
+    body {
+        margin: 0; padding: 0; font-family: 'Lato', sans-serif;
+        background-image: url('Imagini/Deshboard/avif\ 1.avif'); 
+        background-size: cover; background-position: center; background-attachment: fixed;
+        color: var(--text-color);
+        line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh;
+    }
+
+    /* Strat (overlay) pentru a intuneca poza de fundal in Dark Mode */
+    .bg-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: var(--overlay-color); z-index: -1; pointer-events: none;
+    }
+
+    /* --- 3. HEADER & NAVIGARE --- */
+    header {
+        background-color: var(--header-bg); color: white;
+        padding-top: 60px; padding-bottom: 40px; text-align: center; position: relative;
+    }
+    .profile-avatar {
+        width: 150px; height: 150px; border-radius: 50%; object-fit: cover;
+        border: 5px solid white; position: absolute; top: -75px; left: 50%;
+        transform: translateX(-50%); box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .header-spacer { margin-top: 80px; position: relative; }
+    h1 { font-family: 'Lato', sans-serif; font-size: 3rem; margin: 10px 0 5px 0; font-weight: 400; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); color: white;}
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; color: white;}
+
+    .navbar { 
+        background-color: var(--nav-bg); padding: 10px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        position: sticky; top: 0; z-index: 100; display: flex; justify-content: center; align-items: center;
+    }
+    .nav-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+    .nav-links a { 
+        color: var(--text-color); text-decoration: none; font-weight: 700; text-transform: uppercase; 
+        font-size: 0.9rem; padding: 8px 15px; display: inline-block; border-radius: 4px;
+    }
+    /* Fortam culoarea alba in meniu cand e pe dark mode ca sa se vada clar */
+    .dark-theme .nav-links a { color: #f1f1f1; }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.3); }
+
+    .menu-toggle { display: none; flex-direction: column; cursor: pointer; position: absolute; right: 20px; top: 15px; }
+    .bar { height: 3px; width: 25px; background-color: var(--text-color); margin: 3px 0; border-radius: 3px; }
+
+    /* --- 4. PANOU DEMO DARK MODE --- */
+    .main-container { max-width: 900px; margin: 60px auto; padding: 0 20px; text-align: center; flex: 1; width: 100%; }
+    
+    .back-btn {
+        display: inline-block; color: #fff; text-decoration: none; margin-bottom: 20px;
+        font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); transition: 0.3s; text-align: left; width: 100%;
+    }
+    .back-btn:hover { color: #ddd; transform: translateX(-5px); }
+
+    h2.headline { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: #fff; text-shadow: 2px 2px 5px rgba(0,0,0,0.8); margin-bottom: 30px; }
+
+    .demo-card {
+        background: var(--card-bg); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        padding: 40px; border: 1px solid var(--border-color);
+    }
+
+    .demo-card h3 { color: var(--text-color); font-family: 'Playfair Display', serif; font-size: 2rem; margin-top: 0; }
+    .demo-card p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.8; margin-bottom: 30px;}
+
+    /* Butonul de Switch frumos stilizat */
+    .theme-switch-wrapper {
+        display: flex; align-items: center; justify-content: center; gap: 15px;
+        background: rgba(0,0,0,0.05); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);
+    }
+    .dark-theme .theme-switch-wrapper { background: rgba(255,255,255,0.05); }
+
+    .theme-switch {
+        display: inline-block; height: 34px; position: relative; width: 60px;
+    }
+    .theme-switch input { display: none; }
+    .slider {
+        background-color: #ccc; bottom: 0; cursor: pointer; left: 0;
+        position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px;
+    }
+    .slider:before {
+        background-color: #fff; bottom: 4px; content: ""; height: 26px; left: 4px;
+        position: absolute; transition: .4s; width: 26px; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #2c3e50; }
+    input:checked + .slider:before { transform: translateX(26px); }
+
+    .icon-sun { color: #f39c12; font-size: 1.5rem; }
+    .icon-moon { color: #34495e; font-size: 1.5rem; }
+    .dark-theme .icon-moon { color: #f1c40f; }
+
+    /* --- 5. FOOTER --- */
+    footer {
+        background-color: var(--header-bg); color: #bbb; text-align: center; padding: 30px 15px;
+        margin-top: 60px; font-size: 0.9rem; border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    footer span { color: #fff; font-weight: bold; }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 900px) { 
+        h1 { font-size: 2rem; }
+        .navbar { display: block; text-align: left; padding: 15px 20px; min-height: 50px; }
+        .menu-toggle { display: flex; }
+        .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: var(--card-bg); border-radius: 4px; }
+        .nav-links.active { display: flex; }
+        .nav-links a { width: 100%; text-align: center; padding: 15px; margin: 0; border-bottom: 1px solid var(--border-color); }
+        .nav-links a:last-child { border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="bg-overlay"></div>
+
+<div class="header-spacer">
+    <header>
+        <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu" onerror="this.src='https://via.placeholder.com/150'">
+        <h1>Constantin Lupu</h1>
+        <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html" class="active">Experiment</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<div class="main-container">
+    <a href="experiment.html" class="back-btn"><i class="fas fa-arrow-left"></i> Înapoi la Laborator Web</a>
+    <h2 class="headline"><i class="fas fa-adjust"></i> Temă Dinamică</h2>
+
+    <div class="demo-card">
+        <h3>Testează Modul Întunecat</h3>
+        <p>Apasă pe comutatorul de mai jos pentru a schimba culorile întregii pagini. Am folosit variabile CSS pentru a face trecerea fluidă. De asemenea, setarea ta este salvată în memoria browser-ului, deci dacă dai refresh la pagină, va ține minte cum ai lăsat-o!</p>
+        
+        <div class="theme-switch-wrapper">
+            <i class="fas fa-sun icon-sun"></i>
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" />
+                <div class="slider round"></div>
+            </label>
+            <i class="fas fa-moon icon-moon"></i>
+        </div>
+    </div>
+</div>
+
+<footer>
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script>
+    /* --- MENIU HAMBURGER --- */
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => { navLinks.classList.toggle('active'); });
+    }
+
+    /* ==========================================
+       LOGICA PENTRU DARK MODE
+       ========================================== */
+    const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+    const currentTheme = localStorage.getItem('theme');
+
+    // Verifica daca exista deja o setare salvata in memorie la incarcarea paginii
+    if (currentTheme) {
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            toggleSwitch.checked = true; // Pune butonul pe pozitia de dark mode
+        }
+    }
+
+    // Functia care se declanseaza cand apesi pe buton
+    function switchTheme(e) {
+        if (e.target.checked) {
+            // Daca butonul e activat, adaugam clasa dark si salvam in memorie
+            document.body.classList.add('dark-theme');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            // Daca e dezactivat, scoatem clasa si setam pe light
+            document.body.classList.remove('dark-theme');
+            localStorage.setItem('theme', 'light');
+        }    
+    }
+
+    // Ascultam apasarea butonului
+    toggleSwitch.addEventListener('change', switchTheme, false);
+
+</script>
+
+</body>
+</html>

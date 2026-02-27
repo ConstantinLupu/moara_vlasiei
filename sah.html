@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Șah Pro - Ceasuri Dreptunghiulare</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    
+    <style>
+        body {
+            background-color: #222;
+            color: #eee;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 5px;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        h2 { margin: 10px 0; color: #ffeb3b; font-size: 1.4rem; text-align: center; }
+
+        #gameArea {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #myBoard {
+            width: 350px;
+            max-width: 90vw;
+            border: 5px solid #444;
+        }
+
+        /* --- DESIGN NOU CEASURI --- */
+        .info-panel {
+            width: 350px;
+            max-width: 90vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clock-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* Stilul de baza al ceasului - Dreptunghiular */
+        .timer-box {
+            font-family: 'Courier New', monospace;
+            font-size: 26px;
+            font-weight: bold;
+            
+            /* Dimensiuni dreptunghiulare */
+            width: 140px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            /* Aspect inactiv (Default) */
+            background: #444;
+            color: #777;
+            border: 2px solid #555;
+            border-radius: 4px; /* Colturi usor rotunjite, dar dreptunghiular */
+            transition: all 0.3s ease;
+        }
+
+        /* CAND E RANDUL ALBULUI (Activ) */
+        .active-white {
+            background-color: #ffffff;
+            color: #000000;
+            border: 3px solid #FFD700; /* Contur auriu */
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* CAND E RANDUL NEGRULUI (Activ) */
+        .active-black {
+            background-color: #000000;
+            color: #ffffff;
+            border: 3px solid #FFD700; /* Contur auriu */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            transform: scale(1.05);
+        }
+
+        /* PIESE CAPTURATE */
+        .captured-box {
+            display: flex;
+            height: 30px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+            padding: 2px;
+            min-width: 60px;
+            margin-top: 5px;
+        }
+        .captured-box img { height: 20px; width: 20px; margin-right: -5px; }
+
+        /* STATUS */
+        #status {
+            font-weight: bold; 
+            color: #aaa; 
+            margin-top: 5px; 
+            height: 20px;
+            text-align: center;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 40px;
+            font-size: 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #0b7dda;
+        }
+        button:active { transform: translateY(2px); box-shadow: none; }
+
+        .score-display { font-size: 14px; font-weight: bold; color: #fff; margin-left: 10px;}
+
+    </style>
+</head>
+<body>
+
+    <h2>Șah Pro (40 min)</h2>
+
+    <div id="gameArea">
+        
+        <div class="info-panel">
+            <div class="clock-container">
+                <div id="timerBlack" class="timer-box">40:00</div>
+                <div id="capturedWhite" class="captured-box"></div>
+            </div>
+            <div style="text-align:right">
+                <span style="font-size:14px; color:#aaa; font-weight:bold;">AI (Negru)</span>
+            </div>
+        </div>
+
+        <div id="myBoard"></div>
+
+        <div class="info-panel">
+            <div class="clock-container">
+                <div id="timerWhite" class="timer-box">40:00</div>
+                <div id="capturedBlack" class="captured-box"></div>
+            </div>
+            <div style="text-align:right">
+                <span style="font-size:14px; color:#aaa; font-weight:bold;">Tu (Alb)</span>
+                <div id="scoreDisplay" class="score-display">0.0</div>
+            </div>
+        </div>
+
+        <div id="status">Tu ești cu Albul</div>
+        <button id="resetBtn">Joc Nou</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+    <script>
+        var board = null;
+        var game = new Chess();
+        
+        // Elemente UI
+        var $status = $('#status');
+        var $score = $('#scoreDisplay');
+        var $capturedWhite = $('#capturedWhite');
+        var $capturedBlack = $('#capturedBlack');
+        var $timerWhite = $('#timerWhite');
+        var $timerBlack = $('#timerBlack');
+
+        // TIMP
+        var START_TIME = 40 * 60; 
+        var timeWhite = START_TIME;
+        var timeBlack = START_TIME;
+        var timerInterval = null;
+        var isGameActive = false;
+
+        // --- 1. LOGICA CEASULUI ---
+        function formatTime(seconds) {
+            var min = Math.floor(seconds / 60);
+            var sec = seconds % 60;
+            return (min < 10 ? '0' : '') + min + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            isGameActive = true;
+            updateTimerVisuals();
+
+            timerInterval = setInterval(function() {
+                if (!isGameActive) { clearInterval(timerInterval); return; }
+
+                if (game.turn() === 'w') {
+                    timeWhite--;
+                    $timerWhite.text(formatTime(timeWhite));
+                    if (timeWhite <= 0) endGameByTime('w');
+                } else {
+                    timeBlack--;
+                    $timerBlack.text(formatTime(timeBlack));
+                    if (timeBlack <= 0) endGameByTime('b');
+                }
+            }, 1000);
+        }
+
+        function updateTimerVisuals() {
+            // Resetam clasele
+            $timerWhite.removeClass('active-white active-black');
+            $timerBlack.removeClass('active-white active-black');
+
+            if (game.turn() === 'w') {
+                // Randul Albului: Ceas Alb activ
+                $timerWhite.addClass('active-white');
+            } else {
+                // Randul Negrului: Ceas Negru activ
+                $timerBlack.addClass('active-black');
+            }
+        }
+
+        function endGameByTime(loserColor) {
+            isGameActive = false;
+            clearInterval(timerInterval);
+            var winner = (loserColor === 'w') ? 'AI-ul' : 'Tu';
+            $status.html('<span style="color:red; font-size:18px;"> TIMP EXPIRAT! ' + winner + ' câștigă!</span>');
+            $timerWhite.removeClass('active-white');
+            $timerBlack.removeClass('active-black');
+        }
+
+        // --- 2. AI OPTIMIZAT (Pentru a preveni blocarea paginii) ---
+        var pieceValue = { 'p': 100, 'n': 320, 'b': 330, 'r': 500, 'q': 900, 'k': 20000 };
+        
+        // Tabele pozitionale simplificate pentru viteza
+        var pawnEvalWhite = [[0,0,0,0,0,0,0,0],[5,5,5,5,5,5,5,5],[1,1,2,3,3,2,1,1],[0.5,0.5,1,2.5,2.5,1,0.5,0.5],[0,0,0,2,2,0,0,0],[0.5,-0.5,-1,0,0,-1,-0.5,0.5],[0.5,1,1,-2,-2,1,1,0.5],[0,0,0,0,0,0,0,0]];
+        var pawnEvalBlack = pawnEvalWhite.slice().reverse();
+
+        function getPieceValue(piece, x, y) {
+            if (piece === null) return 0;
+            var val = pieceValue[piece.type];
+            if (piece.type === 'p') {
+                val += (piece.color === 'w' ? pawnEvalWhite[y][x] : pawnEvalBlack[y][x]) * 10;
+            }
+            return (piece.color === 'w') ? val : -val;
+        }
+
+        function evaluateBoard(board) {
+            var total = 0;
+            for (var i = 0; i < 8; i++) {
+                for (var j = 0; j < 8; j++) {
+                    total += getPieceValue(board[i][j], j, i);
+                }
+            }
+            return total;
+        }
+
+        // Minimax Simplificat (Fara sortare interna excesiva pentru a evita lag-ul)
+        function minimax(depth, game, alpha, beta, isMaximizing) {
+            if (depth === 0) return -evaluateBoard(game.board());
+
+            var moves = game.moves();
+            // Sortarea mutarilor e buna, dar consuma timp. O facem doar la primul nivel in makeBestMove
+            
+            if (isMaximizing) {
+                var best = -99999;
+                for (var i = 0; i < moves.length; i++) {
+                    game.move(moves[i]);
+                    best = Math.max(best, minimax(depth - 1, game, alpha, beta, !isMaximizing));
+                    game.undo();
+                    alpha = Math.max(alpha, best);
+                    if (beta <= alpha) return best;
+                }
+                return best;
+            } else {
+                var best = 99999;
+                for (var i = 0; i < moves.length; i++) {
+                    game.move(moves[i]);
+                    best = Math.min(best, minimax(depth - 1, game, alpha, beta, !isMaximizing));
+                    game.undo();
+                    beta = Math.min(beta, best);
+                    if (beta <= alpha) return best;
+                }
+                return best;
+            }
+        }
+
+        function makeBestMove() {
+            if (game.game_over() || !isGameActive) return;
+
+            var bestMove = null;
+            var bestValue = -99999;
+            var moves = game.moves();
+            
+            // Randomizam usor pentru varietate
+            moves.sort(() => 0.5 - Math.random());
+
+            // DEPTH 2 ESTE SAFE PENTRU WEB PE TELEFON.
+            // Nu creste la 3 fara WebWorkers, altfel blocheaza pagina.
+            for (var i = 0; i < moves.length; i++) {
+                var move = moves[i];
+                game.move(move);
+                var val = minimax(2, game, -100000, 100000, false);
+                game.undo();
+                if (val > bestValue) {
+                    bestValue = val;
+                    bestMove = move;
+                }
+            }
+
+            game.move(bestMove);
+            board.position(game.fen());
+            updateGameInfo();
+            updateTimerVisuals(); 
+        }
+
+        // --- 3. INTERFATA ---
+
+        function updateGameInfo() {
+            updateStatus();
+            updateCapturedAndScore();
+        }
+
+        function updateCapturedAndScore() {
+            var history = game.history({ verbose: true });
+            var capturedWhiteHTML = '';
+            var capturedBlackHTML = '';
+            var materialScore = 0; 
+
+            for (var i = 0; i < history.length; i++) {
+                if ('captured' in history[i]) {
+                    var piece = history[i].captured;
+                    var color = history[i].color; 
+                    var img = '<img src="https://chessboardjs.com/img/chesspieces/wikipedia/' + 
+                              (color === 'w' ? 'b' : 'w') + piece.toUpperCase() + '.png">';
+
+                    if (color === 'w') capturedBlackHTML += img;
+                    else capturedWhiteHTML += img;
+                }
+            }
+            
+            var boardState = game.board();
+            for (var i = 0; i < 8; i++) {
+                for (var j = 0; j < 8; j++) {
+                    var p = boardState[i][j];
+                    if(p) {
+                        var val = (p.type==='p'?1:p.type==='n'?3:p.type==='b'?3:p.type==='r'?5:p.type==='q'?9:0);
+                        materialScore += (p.color === 'w' ? val : -val);
+                    }
+                }
+            }
+
+            $capturedWhite.html(capturedWhiteHTML);
+            $capturedBlack.html(capturedBlackHTML);
+            
+            if(materialScore > 0) $score.html('<span style="color:#4CAF50">+' + materialScore + '</span>');
+            else if(materialScore < 0) $score.html('<span style="color:#f44336">' + materialScore + '</span>');
+            else $score.html('<span style="color:#aaa">0</span>');
+        }
+
+        function onDragStart (source, piece) {
+            if (game.game_over() || !isGameActive) return false;
+            if (piece.search(/^b/) !== -1) return false; 
+        }
+
+        function onDrop (source, target) {
+            var move = game.move({ from: source, to: target, promotion: 'q' });
+            if (move === null) return 'snapback';
+
+            updateGameInfo();
+            updateTimerVisuals(); 
+
+            $status.html('AI gândește...');
+            
+            // Aceasta intarziere (setTimeout) este CRUCIALA.
+            // Ea permite browserului sa "deseneze" mutarea ta pe ecran 
+            // INAINTE ca AI-ul sa blocheze procesorul cu calculele.
+            window.setTimeout(makeBestMove, 250); 
+        }
+
+        function onSnapEnd () { board.position(game.fen()); }
+
+        function updateStatus () {
+            if (!isGameActive && (timeWhite <= 0 || timeBlack <= 0)) return;
+
+            if (game.in_checkmate()) {
+                isGameActive = false;
+                clearInterval(timerInterval);
+                $status.html(game.turn() === 'w' ? '<span style="color:red">Mat! Ai Pierdut!</span>' : '<span style="color:lime">Mat! Ai Câștigat!</span>');
+                $timerWhite.removeClass('active-white');
+                $timerBlack.removeClass('active-black');
+            } else if (game.in_draw()) {
+                isGameActive = false;
+                clearInterval(timerInterval);
+                $status.html('Remiză!');
+            } else {
+                $status.html(game.turn() === 'w' ? 'Rândul tău' : 'Rândul AI-ului');
+                if (game.in_check()) $status.append(' <span style="color:orange">(ȘAH!)</span>');
+            }
+        }
+
+        function initGame() {
+            game.reset();
+            board.start();
+            
+            timeWhite = START_TIME;
+            timeBlack = START_TIME;
+            $timerWhite.text("40:00").removeClass('active-white active-black');
+            $timerBlack.text("40:00").removeClass('active-white active-black');
+            
+            $capturedWhite.html('');
+            $capturedBlack.html('');
+            $score.html('0.0');
+            
+            updateGameInfo();
+            startTimer(); 
+        }
+
+        var config = {
+            draggable: true,
+            position: 'start',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd,
+            pieceTheme: function (piece) {
+                return 'https://chessboardjs.com/img/chesspieces/wikipedia/' + piece + '.png';
+            }
+        };
+
+        board = Chessboard('myBoard', config);
+        initGame();
+
+        $('#resetBtn').on('click', function() {
+            initGame();
+        });
+        
+        window.addEventListener('resize', function() { board.resize(); });
+    </script>
+</body>
+</html>

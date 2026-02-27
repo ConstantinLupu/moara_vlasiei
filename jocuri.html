@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colecție Jocuri - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* --- 1. STILURI DE BAZA --- */
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Lato', sans-serif;
+        
+        /* IMAGINEA DE FUNDAL */
+        background-image: url('Imagini/Deshboard/avif\ 1.avif'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* --- 2. HEADER COMPLET (Ca pe restul paginilor) --- */
+    header {
+        background-color: rgba(51, 51, 51, 0.9);
+        color: white;
+        padding-top: 60px;
+        padding-bottom: 40px;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+
+    .profile-link {
+        display: block;
+        position: absolute;
+        top: -75px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-decoration: none;
+        z-index: 10;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        transition: transform 0.3s;
+        background-color: #fff;
+    }
+    
+    .profile-avatar:hover { transform: scale(1.05); }
+    
+    .header-spacer { margin-top: 80px; position: relative; }
+
+    .header-content-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px;
+        gap: 40px;
+    }
+
+    .header-info {
+        flex: 1;
+        text-align: right;
+    }
+
+    h1.site-title { font-family: 'Lato', sans-serif; font-size: 3rem; margin: 10px 0 5px 0; font-weight: 400; line-height: 1.2; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); color: #fff; }
+    h1.site-title a { color: white; text-decoration: none; transition: color 0.3s; }
+    h1.site-title a:hover { color: #ccc; }
+    
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; margin-bottom: 15px; color: #fff; }
+
+    .social-container {
+        margin-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .social-icon {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+        text-decoration: none;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .social-icon:hover { background-color: #fff; color: #333; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+    .header-video-container {
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .header-video {
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        border: 2px solid rgba(255,255,255,0.2);
+        display: block;
+    }
+
+    .header-time-container {
+        flex: 1;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 30px 20px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-width: 300px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .clock-display { font-family: 'Lato', sans-serif; font-size: 2.5rem; font-weight: bold; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
+    .date-display { font-size: 1.1rem; color: #ddd; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* --- 3. MENIU NAVIGARE (HAMBURGER) --- */
+    .navbar { 
+        background-color: rgba(144, 164, 174, 0.9); 
+        padding: 10px 20px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        position: sticky; 
+        top: 0; 
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a { 
+        color: #333; 
+        text-decoration: none; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 0.9rem; 
+        padding: 8px 15px;
+        display: inline-block; 
+        transition: 0.3s; 
+        border-radius: 4px;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+    }
+    .bar {
+        height: 3px;
+        width: 25px;
+        background-color: #333;
+        margin: 3px 0;
+        border-radius: 3px;
+        transition: 0.4s;
+    }
+
+    /* --- 4. CONTINUT JOCURI --- */
+    .games-container { 
+        max-width: 1200px; 
+        margin: 60px auto; 
+        padding: 0 20px; 
+        flex: 1; 
+        width: 100%; 
+        text-align: center;
+    }
+
+    h2.headline { 
+        font-family: 'Playfair Display', serif; 
+        font-size: 2.5rem; 
+        color: #fff; 
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+        margin-bottom: 10px; 
+    }
+
+    .games-desc {
+        color: #fff;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        margin-bottom: 40px;
+        font-weight: bold;
+    }
+
+    .games-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+        gap: 30px; 
+        justify-content: center; 
+    }
+
+    .game-card { 
+        background: rgba(255, 255, 255, 0.95); /* Fundal semi-transparent */
+        border-radius: 10px; 
+        overflow: hidden; 
+        transition: transform 0.3s, box-shadow 0.3s; 
+        border: 1px solid rgba(255,255,255,0.5); 
+        display: flex; 
+        flex-direction: column; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .game-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); border-color: #90a4ae; }
+    .game-card img { width: 100%; height: 180px; object-fit: cover; border-bottom: 1px solid #ddd; }
+    
+    .game-info { padding: 20px; flex: 1; display: flex; flex-direction: column; text-align: left; }
+    .game-info h3 { margin: 0 0 10px 0; color: #333; font-size: 1.4rem; font-family: 'Playfair Display', serif; }
+    .game-info p { color: #666; font-size: 0.95rem; margin-bottom: 20px; flex: 1; line-height: 1.5; font-weight: bold;}
+    
+    .btn-play { 
+        display: block; 
+        width: 100%; 
+        padding: 12px; 
+        background-color: #5d5d5d; 
+        color: white; 
+        text-align: center; 
+        text-decoration: none; 
+        font-weight: bold; 
+        border-radius: 50px; 
+        transition: 0.3s; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+    }
+    .btn-play:hover { background-color: #333; letter-spacing: 2px; }
+    
+    /* --- 5. FOOTER --- */
+    .main-footer {
+        background-color: rgba(34, 34, 34, 0.9);
+        color: #bbb;
+        text-align: center;
+        padding: 20px;
+        font-size: 0.9rem;
+        margin-top: 40px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .main-footer span { color: #fff; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);}
+
+    /* --- ADAPTARE PENTRU TELEFON (RESPONSIVE) --- */
+    @media (max-width: 900px) { 
+        .header-content-wrapper { flex-direction: column; text-align: center; gap: 30px; }
+        .header-info { text-align: center; }
+        .social-container { justify-content: center; }
+        .header-video-container { max-width: 100%; width: 100%; }
+        .header-time-container { max-width: 100%; width: 100%; }
+        h1.site-title { font-size: 2.2rem; }
+        .subtitle { font-size: 1rem; }
+        .profile-avatar { width: 120px; height: 120px; top: -60px; }
+        .header-spacer { margin-top: 60px; }
+
+        /* Meniu de mobil */
+        .navbar {
+            display: block; 
+            text-align: left;
+            padding: 15px 20px;
+            min-height: 50px;
+        }
+
+        .menu-toggle { display: flex; }
+
+        .nav-links {
+            display: none; 
+            flex-direction: column;
+            width: 100%;
+            margin-top: 20px; 
+            gap: 0;
+            background: rgba(0,0,0,0.05); 
+            border-radius: 4px;
+        }
+
+        .nav-links.active { display: flex; }
+
+        .nav-links a {
+            width: 100%;
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .nav-links a:last-child { border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header-spacer">
+    <header>
+        <a href="index.html" class="profile-link">
+            <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu">
+        </a>
+
+        <div class="header-content-wrapper">
+            <div class="header-info">
+                <h1 class="site-title"><a href="index.html">Constantin Lupu</a></h1>
+                <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+                
+                <div class="social-container">
+                    <a href="https://www.facebook.com/" target="_blank" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com/" target="_blank" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="https://www.instagram.com/" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/" target="_blank" class="social-icon"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+
+            <div class="header-video-container">
+                <video class="header-video" autoplay loop muted playsinline controls>
+                    <source src="video/costel mp 4.mp4" type="video/mp4">
+                    Browserul tău nu suportă elementul video.
+                </video>
+            </div>
+
+            <div class="header-time-container">
+                <div id="clock" class="clock-display">00:00:00</div>
+                <div id="date" class="date-display">...</div>
+            </div>
+        </div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html" class="active">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html">Experiment</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<div class="games-container">
+    <h2 class="headline">Arcade Zone</h2>
+    <p class="games-desc">Alege jocul preferat și distrează-te direct în browser!</p>
+
+    <div class="games-grid">
+        
+        <div class="game-card">
+            <img src="Imagini/Jocuri/jpg 7.jpg" alt="Table Interactive">
+            <div class="game-info">
+                <h3>Table Interactive</h3>
+                <p>Aruncă zarurile și mută piesele libere pe tablă. Perfect pentru a juca cu un prieten la același ecran!</p>
+                <a href="table.html" class="btn-play">Joacă Acum</a>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <img src="Imagini/Jocuri/jpg 8.jpg" alt="Mini Fotbal">
+            <div class="game-info">
+                <h3>Penalty Shootout</h3>
+                <p>Trage de minge cu mouse-ul și dă-i drumul pentru a șuta. Încearcă să învingi portarul!</p>
+                <a href="fotbal.html" class="btn-play">Joacă Acum</a>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <img src="Imagini/Jocuri/jpg 2.jpg" alt="Snake">
+            <div class="game-info">
+                <h3>Snake Classic</h3>
+                <p>Jocul clasic al șarpelui. Mănâncă merele, crește în lungime și evită coada!</p>
+                <a href="snake.html" class="btn-play">Joacă Acum</a>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <img src="Imagini/Jocuri/webp 3.webp" alt="Breakout">
+            <div class="game-info">
+                <h3>Breakout</h3>
+                <p>Distruge toate cărămizile cu mingea fără să o scapi jos. Reflexe rapide necesare!</p>
+                <a href="breakout.html" class="btn-play">Joacă Acum</a>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <img src="Imagini/Jocuri/webp 4.webp" alt="Space Invaders">
+            <div class="game-info">
+                <h3>Space Invaders</h3>
+                <p>Apără Pământul de invazia extratereștrilor. Trage și ferește-te de proiectile.</p>
+                <a href="space.html" class="btn-play">Joacă Acum</a>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <img src="Imagini/Jocuri/webp 5.webp" alt="Floppy Bird">
+            <div class="game-info">
+                <h3>Floppy Bird</h3>
+                <p>Zboară printre tuburi fără să le atingi. Simplu de înțeles, greu de stăpânit.</p>
+                <a href="floppy.html" class="btn-play">Joacă Acum</a>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <img src="Imagini/Jocuri/jpg 6.jpg" alt="Sah">
+            <div class="game-info">
+                <h3>Șah</h3>
+                <p>Jocul regilor. Testează-ți strategia împotriva unui AI simplu sau exersează mutări.</p>
+                <a href="sah.html" class="btn-play">Joacă Acum</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer class="main-footer">
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script>
+    /* -------------------------------------------
+       FUNCȚIONALITATE MENIU HAMBURGER
+    ------------------------------------------- */
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            // Adaugam sau scoatem clasa 'active' pentru a afisa/ascunde meniul
+            navLinks.classList.toggle('active');
+        });
+    }
+
+    /* -------------------------------------------
+       SCRIPTURI PENTRU CEAS SI VIZITATORI (Adaugate pt ca ai headerul complet acum)
+    ------------------------------------------- */
+    function updateClock() {
+        const clockEl = document.getElementById('clock');
+        const dateEl = document.getElementById('date');
+        if(!clockEl || !dateEl) return;
+
+        const now = new Date();
+        let h = now.getHours().toString().padStart(2, '0');
+        let m = now.getMinutes().toString().padStart(2, '0');
+        let s = now.getSeconds().toString().padStart(2, '0');
+        clockEl.textContent = `${h}:${m}:${s}`;
+        
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('ro-RO', options);
+        dateEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+    }
+
+    setInterval(() => {
+        updateClock();
+    }, 1000);
+    updateClock();
+</script>
+
+</body>
+</html>

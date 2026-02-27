@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Joc Breakout - Portofoliu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { 
+            background-color: #1a1a1a; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden; 
+            touch-action: none; 
+        }
+        
+        /* --- STIL BUTON INAPOI --- */
+        .btn-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: white;
+            background-color: #444;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            border: 1px solid #666;
+            transition: 0.3s;
+            z-index: 100;
+            font-size: 14px;
+        }
+        .btn-back:hover {
+            background-color: #0095DD; /* Albastru specific Breakout */
+            border-color: #0095DD;
+        }
+
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 149, 221, 0.3);
+        }
+
+        canvas { 
+            background: #000; 
+            display: block; 
+            border: 3px solid #0095DD;
+            border-radius: 4px;
+            cursor: none; 
+        }
+
+        /* Stiluri pentru Meniul Suprapus */
+        #gameMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        h1 { margin: 0 0 10px 0; font-size: 28px; text-transform: uppercase; letter-spacing: 2px; }
+        p { color: #ccc; margin: 5px 0 20px 0; font-size: 16px; text-align: center; }
+        .score-big { font-size: 32px; color: gold; font-weight: bold; margin: 10px 0; }
+
+        button {
+            padding: 12px 24px;
+            margin: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            width: 220px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        button:active { transform: scale(0.95); }
+
+        .btn-continue { background-color: #4CAF50; color: white; }
+        .btn-continue:hover { background-color: #45a049; }
+
+        .btn-reset { background-color: #f44336; color: white; }
+        .btn-reset:hover { background-color: #d32f2f; }
+
+        .ui-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 320px;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<a href="portofoliu.html" class="btn-back">⬅ Înapoi la Portofoliu</a>
+
+<div class="ui-bar">
+    <span>Scor: <span id="scoreVal">0</span></span>
+    <span>Max: <span id="highScoreVal">0</span></span>
+    <span>Vieți: <span id="livesVal">3</span></span>
+</div>
+
+<div id="gameContainer">
+    <canvas id="myCanvas" width="320" height="400"></canvas>
+    
+    <div id="gameMenu">
+        <h1 id="menuTitle" style="color: #0095DD;">BREAKOUT</h1>
+        <p id="menuSubtitle">Sparge toate cărămizile!</p>
+        <div id="finalScoreDisplay" style="display:none;" class="score-big">0</div>
+        
+        <button id="btnStart" class="btn-continue" onclick="startGame()">Start Joc</button>
+        <button id="btnContinue" class="btn-continue" style="display:none;" onclick="continueGame()">Continuă (Păstrează Scor)</button>
+        <button id="btnRestart" class="btn-reset" style="display:none;" onclick="resetGame()">Joc Nou (De la 0)</button>
+    </div>
+</div>
+
+<p style="font-size: 12px; color: #666; margin-top: 10px;">Pauză: SPACE | Control: Mouse / Touch / Săgeți</p>
+
+<script>
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+    
+    // Elemente UI
+    const menu = document.getElementById("gameMenu");
+    const menuTitle = document.getElementById("menuTitle");
+    const menuSubtitle = document.getElementById("menuSubtitle");
+    const btnStart = document.getElementById("btnStart");
+    const btnContinue = document.getElementById("btnContinue");
+    const btnRestart = document.getElementById("btnRestart");
+    const finalScoreDisplay = document.getElementById("finalScoreDisplay");
+    
+    const uiScore = document.getElementById("scoreVal");
+    const uiLives = document.getElementById("livesVal");
+    const uiHighScore = document.getElementById("highScoreVal");
+
+    // Variabile Joc
+    let ballRadius = 8;
+    let x, y, dx, dy;
+    let paddleHeight = 10;
+    let paddleWidth = 75;
+    let paddleX;
+    
+    let rightPressed = false;
+    let leftPressed = false;
+
+    // Configurare Cărămizi
+    let brickRowCount = 5;
+    let brickColumnCount = 4;
+    let brickPadding = 10;
+    let brickOffsetTop = 30;
+    let brickOffsetLeft = 25;
+    let brickWidth = (canvas.width - (brickOffsetLeft * 2) - (brickPadding * 3)) / brickColumnCount + 8;
+    let brickHeight = 20;
+
+    let bricks = [];
+    let score = 0;
+    let lives = 3;
+    let highScore = localStorage.getItem('breakout_highscore') || 0;
+    
+    let isGameRunning = false;
+    let isPaused = false;
+    let animationId;
+
+    uiHighScore.innerText = highScore;
+
+    // Initializare variabilelor de pozitie
+    function resetBallPaddle() {
+        x = canvas.width / 2;
+        y = canvas.height - 30;
+        dx = 4; // Viteza initiala
+        dy = -4;
+        paddleX = (canvas.width - paddleWidth) / 2;
+    }
+
+    function initBricks() {
+        for(let c=0; c<brickColumnCount; c++) {
+            bricks[c] = [];
+            for(let r=0; r<brickRowCount; r++) {
+                bricks[c][r] = { x: 0, y: 0, status: 1 };
+            }
+        }
+    }
+
+    // --- LOGICA MENIURILOR ---
+
+    function showMenu(type) {
+        isGameRunning = false;
+        cancelAnimationFrame(animationId);
+        menu.style.display = "flex";
+        btnStart.style.display = "none";
+        finalScoreDisplay.style.display = "block";
+        finalScoreDisplay.innerText = score;
+
+        if (type === "GAMEOVER") {
+            menuTitle.innerText = "GAME OVER";
+            menuTitle.style.color = "red";
+            menuSubtitle.innerText = "Ai rămas fără vieți.";
+            
+            // Optiuni la Game Over
+            btnContinue.innerText = "Continuă (Primești 3 vieți)";
+            btnContinue.style.display = "block";
+            btnRestart.style.display = "block";
+        } 
+        else if (type === "WIN") {
+            menuTitle.innerText = "NIVEL COMPLET!";
+            menuTitle.style.color = "lime";
+            menuSubtitle.innerText = "Excelent! Cărămizi distruse.";
+            
+            // Optiuni la Castig
+            btnContinue.innerText = "Nivelul Următor (Mentine Scor)";
+            btnContinue.style.display = "block";
+            btnRestart.style.display = "block";
+        }
+    }
+
+    // Butonul: START INITIAL
+    function startGame() {
+        resetGame(); // Start e de fapt un Reset total la inceput
+    }
+
+    // Butonul: JOC NOU (RESET TOTAL)
+    function resetGame() {
+        score = 0;
+        lives = 3;
+        resetBallPaddle();
+        initBricks();
+        updateUI();
+        resumeLoop();
+    }
+
+    // Butonul: CONTINUĂ (PASTREAZA SCORUL)
+    function continueGame() {
+        if(lives <= 0) {
+            lives = 3; // Refill vieti
+        }
+        
+        // Resetam caramizile daca sunt toate sparte
+        let activeBricks = 0;
+        for(let c=0; c<brickColumnCount; c++) {
+            for(let r=0; r<brickRowCount; r++) {
+                if(bricks[c][r].status === 1) activeBricks++;
+            }
+        }
+        if(activeBricks === 0) {
+            initBricks();
+            dx *= 1.1; // Creste putin viteza la nivelul urmator
+            dy *= 1.1;
+        }
+
+        resetBallPaddle();
+        updateUI();
+        resumeLoop();
+    }
+
+    function resumeLoop() {
+        menu.style.display = "none";
+        isGameRunning = true;
+        isPaused = false;
+        draw();
+    }
+
+    function updateUI() {
+        uiScore.innerText = score;
+        uiLives.innerText = lives;
+        if(score > highScore) {
+            highScore = score;
+            localStorage.setItem('breakout_highscore', highScore);
+            uiHighScore.innerText = highScore;
+        }
+    }
+
+    // --- END MENIU LOGIC ---
+
+    // Evenimente
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+    document.addEventListener("touchmove", touchMoveHandler, {passive: false});
+
+    function keyDownHandler(e) {
+        if(e.key == "Right" || e.key == "ArrowRight" || e.key == "d") rightPressed = true;
+        else if(e.key == "Left" || e.key == "ArrowLeft" || e.key == "a") leftPressed = true;
+        
+        // PAUZA cu SPACE
+        if(e.code === "Space" && isGameRunning) {
+            isPaused = !isPaused;
+            if(!isPaused) draw();
+        }
+    }
+
+    function keyUpHandler(e) {
+        if(e.key == "Right" || e.key == "ArrowRight" || e.key == "d") rightPressed = false;
+        else if(e.key == "Left" || e.key == "ArrowLeft" || e.key == "a") leftPressed = false;
+    }
+
+    function mouseMoveHandler(e) {
+        if(!isGameRunning || isPaused) return;
+        var rect = canvas.getBoundingClientRect();
+        var relativeX = e.clientX - rect.left;
+        if(relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddleWidth/2;
+        }
+    }
+
+    function touchMoveHandler(e) {
+        e.preventDefault();
+        if(!isGameRunning || isPaused) return;
+        var rect = canvas.getBoundingClientRect();
+        var relativeX = e.touches[0].clientX - rect.left;
+        if(relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddleWidth/2;
+        }
+    }
+
+    function collisionDetection() {
+        let activeBricks = 0;
+        for(let c=0; c<brickColumnCount; c++) {
+            for(let r=0; r<brickRowCount; r++) {
+                let b = bricks[c][r];
+                if(b.status == 1) {
+                    activeBricks++;
+                    if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+                        dy = -dy;
+                        b.status = 0;
+                        score++;
+                        updateUI();
+                    }
+                }
+            }
+        }
+        
+        if(activeBricks === 0 && isGameRunning) {
+            showMenu("WIN");
+        }
+    }
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawBricks() {
+        for(let c=0; c<brickColumnCount; c++) {
+            for(let r=0; r<brickRowCount; r++) {
+                if(bricks[c][r].status == 1) {
+                    let brickX = (c*(brickWidth+brickPadding)) + brickOffsetLeft;
+                    let brickY = (r*(brickHeight+brickPadding)) + brickOffsetTop;
+                    bricks[c][r].x = brickX;
+                    bricks[c][r].y = brickY;
+                    ctx.beginPath();
+                    ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                    
+                    // Culori
+                    let colors = ["#ff5252", "#ff9800", "#ffeb3b", "#4caf50", "#2196f3"];
+                    ctx.fillStyle = colors[r % 5];
+                    
+                    ctx.fill();
+                    ctx.closePath();
+                }
+            }
+        }
+    }
+
+    function drawPaused() {
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText("PAUZĂ", canvas.width/2, canvas.height/2);
+    }
+
+    function draw() {
+        if(!isGameRunning) return;
+        if(isPaused) {
+            drawPaused();
+            return;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBricks();
+        drawBall();
+        drawPaddle();
+        collisionDetection();
+
+        // Lovire Pereti
+        if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+            dx = -dx;
+        }
+        if(y + dy < ballRadius) {
+            dy = -dy;
+        } 
+        else if(y + dy > canvas.height-ballRadius) {
+            // Lovire Paleta
+            if(x > paddleX && x < paddleX + paddleWidth) {
+                let hitPoint = x - (paddleX + paddleWidth/2);
+                hitPoint = hitPoint / (paddleWidth/2);
+                
+                let speed = Math.sqrt(dx*dx + dy*dy);
+                dx = hitPoint * speed * 0.8;
+                dy = -Math.abs(dy);
+            }
+            else {
+                lives--;
+                updateUI();
+                if(!lives) {
+                    showMenu("GAMEOVER");
+                    return;
+                } else {
+                    resetBallPaddle();
+                }
+            }
+        }
+
+        if(rightPressed && paddleX < canvas.width - paddleWidth) paddleX += 6;
+        else if(leftPressed && paddleX > 0) paddleX -= 6;
+
+        x += dx;
+        y += dy;
+
+        animationId = requestAnimationFrame(draw);
+    }
+
+    resetBallPaddle();
+    initBricks();
+    
+</script>
+
+</body>
+</html>

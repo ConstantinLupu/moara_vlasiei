@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Joc JS - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* --- 1. STILURI DE BAZA --- */
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Lato', sans-serif;
+        background-image: url('Imagini/Deshboard/avif\ 1.avif'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* --- 2. HEADER --- */
+    header {
+        background-color: rgba(51, 51, 51, 0.9);
+        color: white;
+        padding-top: 60px;
+        padding-bottom: 40px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        position: absolute;
+        top: -75px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .header-spacer { margin-top: 80px; position: relative; }
+
+    h1 {
+        font-family: 'Lato', sans-serif;
+        font-size: 3rem;
+        margin: 10px 0 5px 0;
+        font-weight: 400;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; }
+
+    /* --- 3. MENIU NAVIGARE (HAMBURGER) --- */
+    .navbar { 
+        background-color: rgba(144, 164, 174, 0.9); 
+        padding: 10px 20px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        position: sticky; 
+        top: 0; 
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a { 
+        color: #333; 
+        text-decoration: none; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 0.9rem; 
+        padding: 8px 15px;
+        display: inline-block; 
+        transition: 0.3s; 
+        border-radius: 4px;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+    }
+    .bar { height: 3px; width: 25px; background-color: #333; margin: 3px 0; border-radius: 3px; transition: 0.4s; }
+
+    /* --- 4. PANOU JOC --- */
+    .main-container { 
+        max-width: 900px; 
+        margin: 60px auto; 
+        padding: 0 20px; 
+        text-align: center; 
+        flex: 1; 
+        width: 100%;
+    }
+    
+    .back-btn {
+        display: inline-block;
+        color: #fff;
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        transition: 0.3s;
+        text-align: left;
+        width: 100%;
+    }
+    .back-btn:hover { color: #ddd; transform: translateX(-5px); }
+
+    h2.headline { 
+        font-family: 'Playfair Display', serif; 
+        font-size: 2.5rem; 
+        color: #fff; 
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+        margin-bottom: 30px; 
+    }
+
+    .game-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        padding: 25px;
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    /* Panoul de Statistica (Nivel & Total) */
+    .player-stats {
+        display: flex;
+        justify-content: space-around;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .stat-box { display: flex; align-items: center; gap: 8px; }
+    .stat-box i { color: #f39c12; font-size: 1.3rem; }
+
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 0 10px;
+    }
+
+    .score-board { font-size: 1.5rem; font-weight: bold; color: #1877f2; }
+
+    .btn-start {
+        background-color: #27ae60; color: white; border: none;
+        padding: 10px 20px; border-radius: 50px; font-weight: bold;
+        font-size: 1.1rem; cursor: pointer; transition: 0.3s;
+        box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+    }
+    .btn-start:hover { background-color: #2ecc71; transform: scale(1.05); }
+
+    .game-wrapper {
+        width: 100%;
+        background-color: #fafafa;
+        border: 3px solid #333;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    canvas {
+        display: block; width: 100%; max-width: 800px; height: auto;
+        background-color: #e0f7fa; margin: 0 auto; cursor: pointer;
+        touch-action: none;
+    }
+
+    .game-instructions { margin-top: 15px; font-size: 0.95rem; color: #666; }
+    .game-instructions strong { color: #e74c3c; }
+
+    /* Butonul de resetare progres */
+    .btn-reset {
+        margin-top: 20px; background-color: #e74c3c; color: white;
+        border: none; padding: 8px 15px; border-radius: 6px;
+        font-weight: bold; cursor: pointer; transition: 0.2s;
+        display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem;
+    }
+    .btn-reset:hover { background-color: #c0392b; }
+
+    /* --- 5. FOOTER --- */
+    footer {
+        background-color: rgba(34, 34, 34, 0.9);
+        color: #bbb; text-align: center; padding: 30px 15px;
+        margin-top: 60px; font-size: 0.9rem; border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    footer span { color: #fff; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 900px) { 
+        h1 { font-size: 2rem; }
+        .navbar { display: block; text-align: left; padding: 15px 20px; min-height: 50px; }
+        .menu-toggle { display: flex; }
+        .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: rgba(0,0,0,0.05); border-radius: 4px; }
+        .nav-links.active { display: flex; }
+        .nav-links a { width: 100%; text-align: center; padding: 15px; margin: 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .nav-links a:last-child { border-bottom: none; }
+        .game-header { flex-direction: column; gap: 15px; }
+        .player-stats { flex-direction: column; gap: 10px; align-items: center; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header-spacer">
+    <header>
+        <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu" onerror="this.src='https://via.placeholder.com/150'">
+        <h1>Constantin Lupu</h1>
+        <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html" class="active">Experiment</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<div class="main-container">
+    <a href="experiment.html" class="back-btn"><i class="fas fa-arrow-left"></i> Înapoi la Laborator Web</a>
+    <h2 class="headline"><i class="fas fa-gamepad"></i> Jumper JS (RPG Edition)</h2>
+
+    <div class="game-card">
+        
+        <div class="player-stats">
+            <div class="stat-box">
+                <i class="fas fa-star"></i> 
+                Total Puncte: <span id="totalPointsDisplay" style="color: #1877f2;">0</span>
+            </div>
+            <div class="stat-box">
+                <i class="fas fa-trophy"></i> 
+                Nivel Jucător: <span id="levelDisplay" style="color: #27ae60;">1</span>
+            </div>
+        </div>
+
+        <div class="game-header">
+            <div class="score-board">Scor Curent: <span id="scoreVal">0</span></div>
+            <button class="btn-start" id="startBtn" onclick="startGame()"><i class="fas fa-play"></i> Start Joc</button>
+        </div>
+
+        <div class="game-wrapper">
+            <canvas id="gameCanvas" width="800" height="300"></canvas>
+        </div>
+
+        <p class="game-instructions">
+            <i class="fas fa-info-circle"></i> Apasă tasta <strong>SPACE</strong> sau <strong>Atinge Ecranul</strong> pentru a sări peste obstacole!<br>
+            <span style="font-size: 0.85rem; color: #888;">*Crești în nivel la fiecare 20 de puncte acumulate în total.</span>
+        </p>
+
+        <button class="btn-reset" onclick="resetProgress()">
+            <i class="fas fa-trash-restore"></i> Resetează Progresul
+        </button>
+
+    </div>
+</div>
+
+<footer>
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script>
+    /* --- MENIU HAMBURGER --- */
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => { navLinks.classList.toggle('active'); });
+    }
+
+    /* ==========================================
+       LOGICA JOCULUI JS & PROGRESIE
+       ========================================== */
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreElement = document.getElementById("scoreVal");
+    const startBtn = document.getElementById("startBtn");
+    const totalPointsDisplay = document.getElementById("totalPointsDisplay");
+    const levelDisplay = document.getElementById("levelDisplay");
+
+    // --- SISTEM DE SALVARE (LOCAL STORAGE) ---
+    // Citim punctele din memoria browser-ului (sau 0 daca nu exista)
+    let totalPoints = parseInt(localStorage.getItem('jumper_total_points')) || 0;
+
+    // Functie pentru actualizarea Nivelului si a Punctelor pe ecran
+    function updatePlayerStats() {
+        totalPointsDisplay.innerText = totalPoints;
+        // Calculam nivelul: +1 nivel la fiecare 20 de puncte
+        let playerLevel = Math.floor(totalPoints / 20) + 1;
+        levelDisplay.innerText = playerLevel;
+    }
+
+    // Functie pentru Resetare (chemata de buton)
+    function resetProgress() {
+        if(confirm("Ești sigur că vrei să ștergi toate punctele și să revii la Nivelul 1?")) {
+            totalPoints = 0;
+            localStorage.setItem('jumper_total_points', 0);
+            updatePlayerStats();
+            alert("Progresul a fost resetat cu succes!");
+        }
+    }
+
+    // Afisam statusul la incarcarea paginii
+    updatePlayerStats();
+
+    // --- VARIABILE JOC ---
+    let isGameOver = false;
+    let isPlaying = false;
+    let score = 0;
+    let frameCount = 0;
+    let gameSpeed = 5;
+    let animationId;
+    let obstacles = [];
+
+    const player = {
+        x: 50, y: 200, width: 40, height: 40,
+        color: "#1877f2", velocityY: 0, gravity: 0.6,
+        jumpPower: -12, groundLevel: 250
+    };
+
+    function drawInitialScreen() {
+        ctx.fillStyle = "#e0f7fa";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#2c3e50";
+        ctx.fillRect(0, player.groundLevel, canvas.width, canvas.height - player.groundLevel);
+        ctx.fillStyle = "#333";
+        ctx.font = "bold 24px Lato";
+        ctx.textAlign = "center";
+        ctx.fillText("Apasă START pentru a începe!", canvas.width / 2, canvas.height / 2 - 20);
+    }
+    window.onload = () => {
+        drawInitialScreen();
+        updatePlayerStats();
+    };
+
+    function startGame() {
+        if(isPlaying) return;
+        player.y = player.groundLevel - player.height;
+        player.velocityY = 0;
+        obstacles = [];
+        score = 0;
+        frameCount = 0;
+        gameSpeed = 5;
+        isGameOver = false;
+        isPlaying = true;
+        
+        scoreElement.innerText = score;
+        startBtn.style.display = "none";
+        gameLoop();
+    }
+
+    function jump() {
+        if (!isPlaying) return;
+        if (player.y >= player.groundLevel - player.height) {
+            player.velocityY = player.jumpPower;
+        }
+    }
+
+    function handleObstacles() {
+        let spawnRate = Math.max(70, 120 - Math.floor(score / 5)); 
+
+        if (frameCount % spawnRate === 0) {
+            let obsHeight = 30 + Math.random() * 40;
+            obstacles.push({
+                x: canvas.width,
+                y: player.groundLevel - obsHeight,
+                width: 30,
+                height: obsHeight,
+                color: "#e74c3c" 
+            });
+        }
+
+        for (let i = 0; i < obstacles.length; i++) {
+            let obs = obstacles[i];
+            obs.x -= gameSpeed;
+
+            ctx.fillStyle = obs.color;
+            ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+            // Coliziune
+            if (
+                player.x < obs.x + obs.width &&
+                player.x + player.width > obs.x &&
+                player.y < obs.y + obs.height &&
+                player.y + player.height > obs.y
+            ) {
+                gameOver();
+            }
+
+            // Punctaj
+            if (obs.x + obs.width < 0) {
+                obstacles.splice(i, 1);
+                score++;
+                scoreElement.innerText = score;
+                i--;
+                if(score % 5 === 0) gameSpeed += 0.5;
+            }
+        }
+    }
+
+    function gameOver() {
+        isGameOver = true;
+        isPlaying = false;
+        cancelAnimationFrame(animationId);
+        
+        // --- SALVAM SCORUL IN TOTAL ---
+        totalPoints += score;
+        localStorage.setItem('jumper_total_points', totalPoints);
+        updatePlayerStats(); // Actualizam ecranul cu noul nivel/punctaj
+        
+        // Ecran de final
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = "white";
+        ctx.font = "bold 40px Lato";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 10);
+        
+        ctx.font = "20px Lato";
+        ctx.fillText("Ai obținut " + score + " puncte în această rundă!", canvas.width / 2, canvas.height / 2 + 30);
+
+        startBtn.innerHTML = '<i class="fas fa-redo"></i> Joacă din nou';
+        startBtn.style.display = "inline-block";
+        startBtn.style.backgroundColor = "#e74c3c";
+    }
+
+    function gameLoop() {
+        if (isGameOver) return;
+
+        ctx.fillStyle = "#e0f7fa";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#2c3e50";
+        ctx.fillRect(0, player.groundLevel, canvas.width, canvas.height - player.groundLevel);
+
+        player.velocityY += player.gravity;
+        player.y += player.velocityY;
+
+        if (player.y > player.groundLevel - player.height) {
+            player.y = player.groundLevel - player.height;
+            player.velocityY = 0;
+        }
+
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+        ctx.fillStyle = "white";
+        ctx.fillRect(player.x + 25, player.y + 10, 5, 5);
+
+        handleObstacles();
+
+        frameCount++;
+        animationId = requestAnimationFrame(gameLoop);
+    }
+
+    // --- CONTROALE JOC ---
+    window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+            e.preventDefault(); 
+            jump();
+        }
+    });
+
+    canvas.addEventListener("mousedown", jump);
+    canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        jump();
+    }, { passive: false });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flappy Clone</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { 
+            background-color: #333; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden; 
+            touch-action: none;
+            font-family: 'Segoe UI', sans-serif;
+            user-select: none;
+        }
+
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.6);
+            border: 4px solid #fff;
+            border-radius: 5px;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        canvas { 
+            display: block; 
+            background: #70c5ce; 
+        }
+
+        /* UI Suprapus */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        #scoreBoard {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            width: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .score-text {
+            font-size: 50px;
+            font-weight: 900;
+            color: white;
+            -webkit-text-stroke: 2px black;
+            margin: 0;
+        }
+
+        .high-score { 
+            font-size: 18px; 
+            color: #ffeb3b; 
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        #messageBox {
+            background: rgba(0,0,0,0.85);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto; 
+            border: 2px solid white;
+            min-width: 200px;
+        }
+
+        h1 { margin: 0 0 10px 0; color: #ffeb3b; text-transform: uppercase; letter-spacing: 2px;}
+        p { margin: 10px 0; font-size: 16px; color: #ddd; }
+        
+        /* Stiluri Butoane */
+        button {
+            margin-top: 15px;
+            padding: 12px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+            width: 100%;
+        }
+        button:active { transform: translateY(2px); }
+
+        #actionBtn {
+            background: #e91e63;
+            color: white;
+            box-shadow: 0 4px 0 #ad1457;
+        }
+
+        #resetRecordBtn {
+            background: #2196F3;
+            color: white;
+            box-shadow: 0 4px 0 #0b7dda;
+            font-size: 14px;
+            padding: 10px 20px;
+            display: none; /* Ascuns initial */
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <canvas id="canvas" width="320" height="480"></canvas>
+    
+    <div id="scoreBoard">
+        <div class="score-text" id="currentScore">0</div>
+        <div class="high-score">RECORD: <span id="bestScore">0</span></div>
+    </div>
+
+    <div id="overlay">
+        <div id="messageBox">
+            <h1 id="titleText">FLAPPY BIRD</h1>
+            <p id="infoText">Apasă SPACE sau Atinge</p>
+            
+            <button id="actionBtn" onclick="handleMainButton()">START JOC</button>
+            
+            <button id="resetRecordBtn" onclick="resetHighScore()">STERGE RECORDUL</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const scoreEl = document.getElementById("currentScore");
+    const bestScoreEl = document.getElementById("bestScore");
+    const msgBox = document.getElementById("messageBox");
+    const titleText = document.getElementById("titleText");
+    const infoText = document.getElementById("infoText");
+    const actionBtn = document.getElementById("actionBtn");
+    const resetRecordBtn = document.getElementById("resetRecordBtn");
+
+    let frames = 0;
+    let score = 0;
+    let highScore = localStorage.getItem('flappy_highscore') || 0;
+    bestScoreEl.innerText = highScore;
+    
+    let state = {
+        current: 0,
+        getReady: 0,
+        game: 1,
+        over: 2
+    };
+
+    const bird = {
+        x: 50,
+        y: 150,
+        w: 30,
+        h: 24,
+        radius: 12,
+        speed: 0,
+        gravity: 0.25,
+        jump: 4.6,
+        rotation: 0,
+        
+        draw: function() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (this.speed * 0.1)));
+            ctx.rotate(this.rotation);
+            
+            ctx.fillStyle = "#ffeb3b";
+            ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            
+            ctx.fillStyle = "white";
+            ctx.beginPath(); ctx.arc(6, -6, 4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = "black";
+            ctx.beginPath(); ctx.arc(7, -6, 1, 0, Math.PI*2); ctx.fill();
+
+            ctx.fillStyle = "#ff9800";
+            ctx.beginPath(); ctx.moveTo(8, 2); ctx.lineTo(16, 6); ctx.lineTo(8, 10); ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.ellipse(-2, 2, 8, 5, 0.2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+            ctx.restore();
+        },
+        
+        update: function() {
+            if(state.current === state.getReady) {
+                this.y = 150 + Math.cos(frames/15) * 5; 
+                this.rotation = 0;
+            } else {
+                this.speed += this.gravity;
+                this.y += this.speed;
+
+                if(this.y + this.radius >= canvas.height - fg.h) {
+                    this.y = canvas.height - fg.h - this.radius;
+                    if(state.current === state.game) {
+                        state.current = state.over;
+                        showGameOver();
+                    }
+                }
+                
+                if(this.y - this.radius <= 0) {
+                    this.speed = 0;
+                    this.y = this.radius;
+                }
+            }
+        },
+        flap: function() {
+            this.speed = -this.jump;
+        }
+    };
+
+    const bg = {
+        draw: function() {
+            ctx.fillStyle = "#70c5ce";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.arc(100, 300, 30, 0, Math.PI*2); ctx.arc(140, 310, 30, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#a3e0c4"; 
+            ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+        }
+    };
+
+    const fg = {
+        h: 80,
+        draw: function() {
+            ctx.fillStyle = "#ded895";
+            ctx.fillRect(0, canvas.height - this.h, canvas.width, this.h);
+            ctx.fillStyle = "#73bf2e";
+            ctx.fillRect(0, canvas.height - this.h, canvas.width, 12);
+            ctx.beginPath(); ctx.moveTo(0, canvas.height - this.h); ctx.lineTo(canvas.width, canvas.height - this.h); ctx.stroke();
+        },
+        update: function() { }
+    };
+
+    const pipes = {
+        position: [],
+        w: 52,
+        h: 400,
+        gap: 120,
+        dx: 2,
+        
+        draw: function() {
+            for(let i = 0; i < this.position.length; i++){
+                let p = this.position[i];
+                let topY = p.y;
+                let bottomY = p.y + this.h + this.gap;
+                
+                // Tub Sus
+                ctx.fillStyle = "#73bf2e";
+                ctx.fillRect(p.x, topY, this.w, this.h);
+                ctx.strokeRect(p.x, topY, this.w, this.h);
+                ctx.fillRect(p.x - 2, topY + this.h - 20, this.w + 4, 20);
+                ctx.strokeRect(p.x - 2, topY + this.h - 20, this.w + 4, 20);
+                
+                // Tub Jos
+                ctx.fillRect(p.x, bottomY, this.w, this.h);
+                ctx.strokeRect(p.x, bottomY, this.w, this.h);
+                ctx.fillRect(p.x - 2, bottomY, this.w + 4, 20);
+                ctx.strokeRect(p.x - 2, bottomY, this.w + 4, 20);
+            }
+        },
+        
+        update: function() {
+            if(state.current !== state.game) return;
+            
+            if(frames % 120 === 0){
+                this.position.push({
+                    x: canvas.width,
+                    y: -150 * (Math.random() + 1)
+                });
+            }
+            
+            for(let i = 0; i < this.position.length; i++){
+                let p = this.position[i];
+                p.x -= this.dx;
+                
+                let bottomPipeY = p.y + this.h + this.gap;
+                
+                // Coliziuni
+                if(bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w) {
+                    if(bird.y - bird.radius < p.y + this.h || bird.y + bird.radius > bottomPipeY) {
+                        state.current = state.over;
+                        showGameOver();
+                    }
+                }
+            }
+
+            // Stergere tuburi si Actualizare Scor
+            if(this.position.length > 0 && this.position[0].x + this.w <= 0) {
+                this.position.shift();
+                score++;
+                scoreEl.innerText = score;
+                highScore = Math.max(score, highScore);
+                localStorage.setItem('flappy_highscore', highScore);
+                bestScoreEl.innerText = highScore;
+            }
+        },
+        
+        reset: function() {
+            this.position = [];
+        }
+    };
+
+    function draw() {
+        bg.draw();
+        pipes.draw();
+        fg.draw();
+        bird.draw();
+    }
+
+    function update() {
+        bird.update();
+        fg.update();
+        pipes.update();
+    }
+
+    function loop() {
+        update();
+        draw();
+        frames++;
+        requestAnimationFrame(loop);
+    }
+    
+    loop();
+
+    // Functie pentru butonul principal
+    function handleMainButton() {
+        resetGame();
+    }
+
+    function resetGame() {
+        bird.speed = 0;
+        bird.rotation = 0;
+        bird.y = 150;
+        pipes.reset();
+        score = 0;
+        frames = 0;
+        scoreEl.innerText = score;
+        
+        state.current = state.game;
+        msgBox.style.display = "none";
+        bird.flap();
+    }
+
+    function resetHighScore() {
+        highScore = 0;
+        localStorage.setItem('flappy_highscore', 0);
+        bestScoreEl.innerText = 0;
+        // Facem butonul gri sau dam feedback ca s-a resetat
+        resetRecordBtn.innerText = "RECORD ȘTERS!";
+        setTimeout(() => {
+            resetRecordBtn.innerText = "STERGE RECORDUL";
+        }, 1000);
+    }
+
+    function showGameOver() {
+        titleText.innerText = "GAME OVER";
+        titleText.style.color = "#ff4444";
+        infoText.innerText = "Scor final: " + score;
+        
+        actionBtn.innerText = "JOACĂ DIN NOU";
+        
+        // Afisam butonul de resetare record
+        resetRecordBtn.style.display = "block";
+        
+        msgBox.style.display = "flex";
+    }
+
+    function handleInput() {
+        switch(state.current) {
+            case state.getReady:
+                resetGame();
+                break;
+            case state.game:
+                bird.flap();
+                break;
+            case state.over:
+                // Nu face nimic la click pe ecran, doar la butoane
+                break;
+        }
+    }
+
+    window.addEventListener("keydown", function(e) {
+        if(e.code === "Space") handleInput();
+    });
+
+    window.addEventListener("touchstart", function(e) {
+        // Prevenim default doar daca nu apasam pe un buton
+        if(e.target.tagName !== 'BUTTON') {
+             e.preventDefault(); 
+             handleInput();
+        }
+    }, {passive: false});
+
+    window.addEventListener("mousedown", function(e) {
+        if(e.target.tagName !== 'BUTTON') {
+            handleInput();
+        }
+    });
+
+    state.current = state.getReady;
+
+</script>
+
+</body>
+</html>

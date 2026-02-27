@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bucegi - Constantin Lupu</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        /* --- STILURI GENERALE --- */
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Lato', sans-serif;
+            background-color: transparent; 
+            color: #333;
+            overflow-x: hidden;
+            min-height: 100vh;
+            /* Flexbox pentru a impinge footer-ul jos */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACKGROUND --- */
+        .bg-container {
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -10; 
+        }
+        #bg-image {
+            width: 100%; height: 100%;
+            object-fit: cover; 
+            transition: opacity 0.5s ease-in-out; 
+        }
+        .bg-container::after {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.1); 
+        }
+
+        /* --- HEADER & AVATAR --- */
+        header {
+            background-color: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding-top: 60px; padding-bottom: 40px;
+            text-align: center; position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .profile-avatar {
+            width: 150px; height: 150px;
+            border-radius: 50%; object-fit: cover;
+            border: 5px solid #fff;
+            position: absolute; top: -75px; left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: #fff;
+        }
+        
+        .header-spacer { margin-top: 80px; position: relative; }
+
+        h1 { font-family: 'Lato', sans-serif; font-size: 2.5rem; margin: 10px 0 5px 0; font-weight: 300; }
+        .subtitle { font-size: 1rem; font-weight: 300; opacity: 0.8; letter-spacing: 1px; }
+
+        /* --- MENIU DE NAVIGARE --- */
+        nav {
+            background-color: rgba(236, 240, 241, 0.9);
+            padding: 15px 40px; 
+            border-bottom: 1px solid #bdc3c7;
+            display: flex;
+            justify-content: flex-end; 
+            gap: 15px;
+        }
+        
+        nav a {
+            color: #ecf0f1; 
+            background-color: #2c3e50; 
+            text-decoration: none;
+            font-weight: 700; text-transform: uppercase;
+            font-size: 0.85rem; 
+            padding: 10px 20px;
+            border-radius: 30px; 
+            display: inline-block; transition: 0.3s; position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        nav a:hover { 
+            background-color: #e74c3c; 
+            transform: translateY(-2px);
+            color: white;
+        } 
+
+        /* --- SLIDER IMAGINI --- */
+        .slider-section {
+            max-width: 1200px; margin: 20px auto 10px auto; padding: 0 20px;
+            width: 100%;
+        }
+        .slider-wrapper {
+            display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px;
+            scrollbar-width: thin; scrollbar-color: #2c3e50 transparent; align-items: center;
+            /* Fix pentru scroll fin pe mobil */
+            -webkit-overflow-scrolling: touch; 
+        }
+        .slider-wrapper::-webkit-scrollbar { height: 6px; }
+        .slider-wrapper::-webkit-scrollbar-thumb { background: #2c3e50; border-radius: 4px; }
+        
+        .card {
+            min-width: 140px; height: 100px;
+            border-radius: 8px; overflow: hidden;
+            cursor: pointer; position: relative;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transition: 0.3s; filter: grayscale(100%); opacity: 0.7;
+            border: 2px solid transparent;
+            /* Previne selectia albastra pe tap */
+            -webkit-user-select: none; user-select: none;
+        }
+        .card:hover, .card.active {
+            filter: grayscale(0%); opacity: 1; transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); border-color: #e74c3c;
+        }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        .card-title {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: rgba(44, 62, 80, 0.9); color: white;
+            font-size: 9px; padding: 3px; text-align: center;
+            text-transform: uppercase; font-weight: bold;
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-container {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; 
+            justify-content: flex-end; 
+            align-items: flex-start; 
+            min-height: 450px;
+            width: 100%;
+            flex: 1; 
+        }
+
+        .right-panel-wrapper {
+            width: 35%; 
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            gap: 10px; 
+            background: rgba(255, 255, 255, 0.2); 
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px); /* Efect sticla */
+        }
+
+        h2.headline {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem; color: #2c3e50; margin: 0;
+            text-align: center; 
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            width: 100%;
+        }
+
+        .description-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px; 
+            border-left: 4px solid #2c3e50; 
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            min-height: 100px;
+            width: 100%; 
+        }
+        
+        p.description { font-size: 0.95rem; color: #555; line-height: 1.5; margin: 0; text-align: justify; }
+
+        /* Robotul */
+        .robot-container { 
+            width: 100%; 
+            height: 250px; 
+            background: transparent; 
+            position: relative; overflow: hidden; 
+            margin-top: -10px; 
+            margin-bottom: -10px;
+            /* Fix pentru touch */
+            touch-action: none;
+        }
+
+        /* --- CONTROALE ROBOT --- */
+        .controls-area {
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+            background: rgba(236, 240, 241, 0.95); padding: 8px 20px;
+            border-radius: 50px; width: fit-content;
+            margin: 0 auto; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .btn-control {
+            background: #2c3e50; color: white; border: none;
+            width: 45px; height: 45px; border-radius: 50%;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            /* Touch target mai mare */
+            min-width: 45px; min-height: 45px;
+        }
+        .btn-control:active { transform: scale(0.95); }
+        .volume-slider { width: 80px; accent-color: #2c3e50; }
+
+        /* --- FOOTER --- */
+        footer {
+            background-color: rgba(44, 62, 80, 0.95);
+            color: #bdc3c7;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9rem;
+            margin-top: auto; 
+            width: 100%;
+            border-top: 1px solid #34495e;
+        }
+        
+        footer span {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        /* MEDIA QUERIES */
+        @media (max-width: 768px) {
+            .main-container { justify-content: center; flex-direction: column; }
+            .right-panel-wrapper { width: 100%; background: rgba(255,255,255,0.85); min-width: auto; }
+            .profile-avatar { width: 120px; height: 120px; top: -60px; }
+            h1 { font-size: 1.8rem; }
+            .robot-container { height: 280px; margin: 10px 0; }
+            .slider-section { margin-top: 10px; }
+            nav { justify-content: center; flex-wrap: wrap; }
+            .card { min-width: 120px; height: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-container">
+        <img id="bg-image" src="" alt="Fundal">
+    </div>
+
+    <div class="header-spacer">
+        <header>
+            <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Avatar">
+            <h1>Constantin Lupu</h1>
+            <div class="subtitle">Moara Vlăsiei • Pasionat de Drumeții & Web Design</div>
+        </header>
+    </div>
+
+    <nav>
+        <a href="index.html">Acasă</a>
+        <a href="poze.html">Înapoi la Albume</a>
+    </nav>
+
+    <div class="slider-section">
+        <div class="slider-wrapper" id="slider-container"></div>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="right-panel-wrapper">
+            
+            <h2 class="headline" id="main-title">MUNȚII BUCEGI</h2>
+            
+            <div class="description-box">
+                <p class="description" id="main-desc">
+                    Alege o imagine de mai sus. Apasă butonul PLAY pentru a asculta descrierea.
+                </p>
+            </div>
+
+            <div class="robot-container" id="robot-section">
+                <div id="robot-canvas" style="width: 100%; height: 100%;"></div>
+            </div>
+
+            <div class="controls-area">
+                <button class="btn-control" id="speakBtn" title="Ascultă Descrierea" aria-label="Redare descriere"><i class="fas fa-play"></i></button>
+                <button class="btn-control" id="stopBtn" title="Stop" aria-label="Oprire descriere"><i class="fas fa-stop"></i></button>
+                
+                <i class="fas fa-volume-up" style="color: #2c3e50; margin-left: 10px;"></i>
+                <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.1" value="1">
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+    </footer>
+
+    <script>
+        // --- DATELE PENTRU MUNȚI ---
+        const locations = [
+            { 
+                id: 0, 
+                src: "Imagini/Muntii Bucegi/jpg 1.jpg", 
+                title: "Valea Prahovei", 
+                desc: "Valea Prahovei este una dintre regiunile turistice cele mai renumite din Munții Carpați. Este așezată în partea de sud-est a României și reprezintă o destinație ideală pentru drumeții montane accesibile." 
+            },
+            { id: 1, src: "Imagini/Muntii Bucegi/jpg 2.jpg", title: "Castelul Peleș", desc: "Castelul Peleș din Sinaia, reședința de vară a regilor României, este o capodoperă arhitecturală. Construit între 1873 și 1914, acesta adăpostește astăzi Muzeul Național Peleș." },
+            { id: 2, src: "Imagini/Muntii Bucegi/jpg 3.jpg", title: "Castelul Cantacuzino", desc: "Situat în Bușteni, în cartierul Zamora, Castelul Cantacuzino oferă o priveliște spectaculoasă asupra munților. A fost construit în 1911 în stil neoromânesc." },
+            { id: 3, src: "Imagini/Muntii Bucegi/webp 4.webp", title: "Crucea Eroilor", desc: "Crucea de pe Caraiman este un monument istoric unic, ridicat la altitudinea de 2291 metri, în memoria eroilor feroviari căzuți la datorie în Primul Război Mondial." },
+            { id: 4, src: "Imagini/Muntii Bucegi/jpg 5.jpg", title: "Cascada Urlătoarea", desc: "Una dintre cele mai spectaculoase cascade din Bucegi. Zgomotul puternic al apei care cade de la 15 metri înălțime i-a dat și numele sugestiv." },
+            { id: 5, src: "Imagini/Muntii Bucegi/jpg 6.jpg", title: "Predeal", desc: "Orașul situat la cea mai mare altitudine din România. Este punctul de legătură între Muntenia și Transilvania și o stațiune importantă pentru sporturile de iarnă." },
+            { id: 6, src: "Imagini/Muntii Bucegi/webp 7.webp", title: "Pietrele lui Solomon", desc: "O zonă de relaxare și drumeție în apropierea Brașovului, încărcată de legende locale și peisaje stâncoase impresionante." },
+            { id: 7, src: "Imagini/Muntii Bucegi/jpg 8.jpg", title: "Poiana Brașov", desc: "Cea mai renumită stațiune montană din România, un loc perfect atât pentru schi iarna, cât și pentru drumeții vara pe Drumul Vechi." }
+        ];
+
+        // --- ELEMENTE DOM ---
+        const bgImageEl = document.getElementById('bg-image');
+        const mainTitle = document.getElementById('main-title');
+        const mainDesc = document.getElementById('main-desc');
+        const sliderContainer = document.getElementById('slider-container');
+        let currentIndex = 0;
+
+        // --- INIT GALERIE ---
+        function initGallery() {
+            sliderContainer.innerHTML = '';
+            locations.forEach((loc, index) => {
+                const card = document.createElement('div');
+                card.className = `card ${index === currentIndex ? 'active' : ''}`;
+                
+                // Folosim si touchstart pentru mobil
+                card.addEventListener('click', () => { selectLocation(index); });
+                card.addEventListener('touchstart', () => { selectLocation(index); }, {passive: true});
+                
+                card.innerHTML = `
+                    <img src="${loc.src}" onerror="this.src='https://via.placeholder.com/300x200?text=Munte'">
+                    <div class="card-title">${loc.title}</div>
+                `;
+                sliderContainer.appendChild(card);
+            });
+            updateContent(); 
+        }
+
+        function selectLocation(index) {
+            currentIndex = index;
+            updateContent();
+            // Stop audio cand schimbi poza ca sa nu vorbeasca peste noua descriere
+            stopAudio(); 
+        }
+
+        function updateContent() {
+            const loc = locations[currentIndex];
+            
+            // --- UPDATE FUNDAL ---
+            bgImageEl.style.opacity = 0;
+            setTimeout(() => {
+                bgImageEl.src = loc.src;
+                bgImageEl.style.opacity = 1;
+            }, 200);
+
+            mainDesc.style.opacity = 0;
+            setTimeout(() => {
+                mainTitle.innerText = loc.title;
+                mainDesc.innerText = loc.desc;
+                mainDesc.style.opacity = 1;
+            }, 200);
+
+            document.querySelectorAll('.card').forEach((c, i) => {
+                c.className = `card ${i === currentIndex ? 'active' : ''}`;
+            });
+        }
+
+        // --- AUDIO ENGINE ---
+        let isSpeaking = false;
+        const speakBtn = document.getElementById('speakBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        let currentUtterance = null;
+        let robotVisor, robotBarMaterials = []; // Referinte pentru animatie
+
+        function stopAudio() {
+            if(window.speechSynthesis) window.speechSynthesis.cancel();
+            isSpeaking = false;
+            updateRobotVisuals(false);
+        }
+
+        function playAudio() {
+            stopAudio(); // Oprim orice rulare anterioara
+            
+            // Verificare suport
+            if (!window.speechSynthesis) {
+                alert("Browserul tău nu suportă sinteza vocală.");
+                return;
+            }
+
+            const text = locations[currentIndex].desc;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ro-RO'; 
+            utterance.volume = parseFloat(volumeSlider.value);
+            
+            // Incercam sa gasim o voce romaneasca, sau Google Romanian
+            const voices = window.speechSynthesis.getVoices();
+            const roVoice = voices.find(v => v.lang.includes('ro') || v.name.includes('Romanian'));
+            if (roVoice) utterance.voice = roVoice;
+
+            utterance.onstart = () => { 
+                isSpeaking = true; 
+                updateRobotVisuals(true); 
+            };
+            
+            utterance.onend = () => { 
+                isSpeaking = false; 
+                updateRobotVisuals(false); 
+            };
+            
+            utterance.onerror = (e) => {
+                console.error("Eroare TTS:", e);
+                isSpeaking = false;
+                updateRobotVisuals(false);
+            };
+
+            currentUtterance = utterance;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function updateRobotVisuals(active) {
+            if(speakBtn) speakBtn.style.background = active ? "#e74c3c" : "#2c3e50";
+            if(robotVisor) robotVisor.material.color.setHex(active ? 0xe74c3c : 0x2c3e50);
+        }
+
+        speakBtn.addEventListener('click', playAudio);
+        // Event pentru touch pe mobil pentru a debloca audio context daca e cazul
+        speakBtn.addEventListener('touchstart', (e) => { 
+            // e.preventDefault(); // Uneori ajuta, alteori nu, depinde de browser
+            playAudio(); 
+        }, {passive: true});
+        
+        stopBtn.addEventListener('click', stopAudio);
+
+        // --- ROBOT 3D (THREE.JS) ---
+        function initRobot() {
+            const wrapper = document.getElementById('robot-section');
+            const container = document.getElementById('robot-canvas');
+            const scene = new THREE.Scene();
+            
+            // Camera ajustata
+            const camera = new THREE.PerspectiveCamera(45, wrapper.clientWidth / wrapper.clientHeight, 0.1, 1000);
+            camera.position.z = 7; 
+            camera.position.y = 0.5;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(wrapper.clientWidth, wrapper.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimizare performanta mobil
+            container.appendChild(renderer.domElement);
+
+            // Lumini
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(5, 5, 5); scene.add(dirLight);
+
+            // Grup Robot
+            const robotGroup = new THREE.Group(); scene.add(robotGroup); robotGroup.position.y = 1.0; 
+
+            // Materiale
+            const metalMat = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.6, roughness: 0.4 });
+            const jointMat = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.3, roughness: 0.7 });
+            const accentMat = new THREE.MeshBasicMaterial({ color: 0x2c3e50 }); 
+
+            // Cap
+            const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), metalMat);
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.3, 0.1), accentMat);
+            visor.position.set(0, 0.1, 0.6); head.add(visor);
+            robotVisor = visor; // Salvam referinta
+
+            const antGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.6);
+            const ant1 = new THREE.Mesh(antGeo, jointMat); ant1.position.set(0.6, 0.8, 0); ant1.rotation.z = -0.5;
+            const ant2 = new THREE.Mesh(antGeo, jointMat); ant2.position.set(-0.6, 0.8, 0); ant2.rotation.z = 0.5;
+            head.add(ant1); head.add(ant2); robotGroup.add(head);
+
+            // Corp
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 1.0, 1.8, 8), metalMat);
+            body.position.y = -1.6;
+            
+            // Bare Audio (Vizualizator)
+            const waveGroup = new THREE.Group(); waveGroup.position.set(0, 0.2, 0.75); 
+            const bars = [];
+            for(let i = 0; i < 5; i++) {
+                const bar = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.4, 0.05), accentMat.clone()); // Clonam materialul ca sa il schimbam individual
+                bar.position.x = (i - 2) * 0.2; 
+                bars.push(bar); 
+                waveGroup.add(bar);
+                robotBarMaterials.push(bar.material);
+            }
+            body.add(waveGroup); robotGroup.add(body);
+
+            // Umeri
+            const shoulderGeo = new THREE.SphereGeometry(0.6);
+            const shoulderL = new THREE.Mesh(shoulderGeo, metalMat); shoulderL.position.set(1.3, -1.2, 0); robotGroup.add(shoulderL);
+            const shoulderR = new THREE.Mesh(shoulderGeo, metalMat); shoulderR.position.set(-1.3, -1.2, 0); robotGroup.add(shoulderR);
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.4), jointMat); neck.position.y = -0.7; robotGroup.add(neck);
+
+            // Mouse / Touch Interaction
+            let targetRotationX = 0;
+            let targetRotationY = 0;
+
+            function handleInput(x, y) {
+                // Normalizam coordonatele (-1 la 1)
+                const normX = (x / window.innerWidth) * 2 - 1;
+                const normY = (y / window.innerHeight) * 2 - 1;
+                
+                targetRotationY = normX * 0.5; // Rotire stanga-dreapta
+                targetRotationX = normY * 0.3; // Rotire sus-jos
+            }
+
+            document.addEventListener('mousemove', (e) => { handleInput(e.clientX, e.clientY); });
+            document.addEventListener('touchmove', (e) => { 
+                if(e.touches.length > 0) handleInput(e.touches[0].clientX, e.touches[0].clientY);
+            }, {passive: true});
+
+            // Loop Animatie
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Interpolare fina pentru rotatie
+                robotGroup.rotation.y += (targetRotationY - robotGroup.rotation.y) * 0.1;
+                head.rotation.x += (-targetRotationX - head.rotation.x) * 0.1;
+
+                // Animatie de "respiratie" / plutire
+                const time = Date.now() * 0.002;
+                body.position.y = -1.6 + Math.sin(time) * 0.02;
+
+                // Animatie Bare Audio
+                bars.forEach((bar, i) => {
+                    if(isSpeaking) { 
+                        // Miscare haotica cand vorbeste
+                        bar.scale.y = 1 + Math.random() * 1.5; 
+                        bar.material.color.setHex(0xe74c3c); 
+                    } else { 
+                        // Miscare lina cand tace
+                        bar.scale.y = 1 + Math.sin(time * 2 + i) * 0.2; 
+                        bar.material.color.setHex(0x2c3e50); 
+                    }
+                });
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Resize Handler
+            window.addEventListener('resize', () => {
+                const w = wrapper.clientWidth; const h = wrapper.clientHeight;
+                renderer.setSize(w, h); 
+                camera.aspect = w / h; 
+                camera.updateProjectionMatrix();
+            });
+        }
+
+        // --- PORNIRE ---
+        window.onload = function() {
+            initGallery();
+            initRobot();
+            
+            // Incarcare voci la inceput (fix pentru Chrome)
+            if(window.speechSynthesis) {
+                window.speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            }
+        };
+
+    </script>
+</body>
+</html>

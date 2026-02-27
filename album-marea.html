@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Album Marea Neagră</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: #007bb5; /* Un albastru mai deschis ca rezerva */
+            color: white; 
+            overflow: hidden; 
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* --- FUNDALUL --- */
+        .bg-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        
+        /* Filtrul transparent */
+        .bg-container::after { 
+            content: ''; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(to right, 
+                rgba(0, 31, 63, 0.6) 0%,   /* Mai transparent in stanga */
+                rgba(0, 31, 63, 0.2) 50%,  /* Foarte transparent la mijloc */
+                rgba(0, 31, 63, 0.0) 100%  /* Complet clar in dreapta */
+            ); 
+        }
+        #bg-image { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s ease-in-out; }
+
+        /* Navigatie */
+        nav { position: absolute; top: 0; width: 100%; padding: 20px; display: flex; justify-content: flex-end; z-index: 100; }
+        nav a { 
+            color: white; text-decoration: none; padding: 10px 20px; margin: 0 5px; 
+            background: rgba(0, 0, 0, 0.3); /* Fundal buton putin mai vizibil */
+            backdrop-filter: blur(5px); 
+            border-radius: 30px; font-weight: bold; transition: 0.3s; font-size: 14px; text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        nav a:hover { background-color: #00bcd4; color: #fff; border-color: #00bcd4; }
+
+        /* Continut Principal */
+        .main-content { 
+            display: flex; 
+            align-items: flex-end; 
+            height: 100vh; 
+            /* Am marit padding-ul de jos la 70px pentru a face loc footer-ului */
+            padding: 0 5% 70px 5%; 
+            gap: 50px; 
+            position: relative; 
+            z-index: 20; 
+        }
+        
+        .text-area { flex: 1; max-width: 500px; margin-bottom: 20px; animation: fadeIn 0.8s ease-out; }
+        
+        .location-tag { 
+            color: #00bcd4; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; 
+            font-size: 14px; margin-bottom: 10px; display: block; 
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8); /* Umbra pentru contrast */
+        }
+        
+        .title { 
+            font-family: 'Oswald', sans-serif; font-size: 70px; line-height: 1.1; margin-bottom: 20px; 
+            text-transform: uppercase; 
+            text-shadow: 2px 2px 15px rgba(0,0,0,0.9); /* Umbra puternica sa se vada pe fundal luminos */
+        }
+        
+        .description { 
+            font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #fff; 
+            text-shadow: 1px 1px 4px rgba(0,0,0,1); font-weight: 500;
+        }
+        
+        .discover-btn { 
+            padding: 15px 30px; background-color: #00bcd4; color: white; 
+            text-decoration: none; border-radius: 5px; font-weight: bold; 
+            text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .discover-btn:hover { background-color: #0097a7; transform: scale(1.05); }
+
+        /* Slider */
+        .slider-area { flex: 1; display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
+        .slider-area::-webkit-scrollbar { display: none; }
+
+        .card { 
+            min-width: 180px; height: 280px; border-radius: 15px; position: relative; 
+            cursor: pointer; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; 
+            border: 2px solid rgba(255,255,255,0.5); 
+        }
+        .card:hover { transform: translateY(-10px); }
+        .card.active { 
+            border-color: #00bcd4; 
+            box-shadow: 0 0 20px rgba(0, 188, 212, 0.8); 
+            transform: scale(1.05); 
+        }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-info { 
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; 
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); 
+        }
+        .card-info h4 { margin: 0; font-size: 14px; text-transform: uppercase; font-family: 'Oswald', sans-serif; color: #fff; text-shadow: 1px 1px 2px black;}
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Animatie Bule */
+        .bubble { 
+            position: fixed; bottom: -50px; z-index: 10; pointer-events: none; 
+            animation: rise linear forwards; opacity: 0.8; color: rgba(255, 255, 255, 0.6); 
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes rise { 
+            0% { transform: translateY(0) scale(0.5); opacity: 0; } 
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-110vh) scale(1.2); opacity: 0; } 
+        }
+
+        /* --- FOOTER --- */
+        .main-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 31, 63, 0.8); /* Albastru inchis semi-transparent */
+            color: #ddd;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.8rem;
+            z-index: 150; /* Deasupra fundalului */
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .main-footer span {
+            color: #00bcd4; /* Culoarea de accent Cyan */
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) { 
+            .main-content { flex-direction: column; padding: 80px 20px 60px 20px; justify-content: flex-end; } 
+            .title { font-size: 40px; } 
+            .slider-area { width: 100%; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-container"><img id="bg-image" src="" alt="Fundal Marea Neagra"></div>
+
+    <nav>
+        <a href="index.html"><i class="fas fa-home"></i> Acasă</a>
+        <a href="poze.html"><i class="fas fa-images"></i> Galerie Principală</a>
+    </nav>
+
+    <div class="main-content">
+        <div class="text-area">
+            <span class="location-tag"><i class="fas fa-water"></i> Litoral / Constanța</span>
+            <h1 class="title" id="main-title">MAREA NEAGRĂ</h1>
+            <p class="description" id="main-desc">
+                Infinitul albastru și sunetul valurilor. O colecție de momente surprinse la malul mării.
+            </p>
+            <a href="#" class="discover-btn">Vezi Detalii</a>
+        </div>
+
+        <div class="slider-area" id="slider-container">
+            </div>
+    </div>
+
+    <footer class="main-footer">
+        2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+    </footer>
+
+    <script>
+        // LISTA DE POZE - VERIFICA SA AI FOLDERUL SI POZELE (1.jpg, 2.jpg...)
+        const locations = [
+            { src: "Imagini/Marea Neagra/1.jpg", title: "Cazinoul din Constanța", desc: "Simbolul istoric al orașului, veghează marea de peste un secol." },
+            { src: "Imagini/Marea Neagra/2.jpg", title: "Răsărit pe Plajă", desc: "Soarele răsare din mare, pictând cerul în culori calde." },
+            { src: "Imagini/Marea Neagra/3.jpg", title: "Portul Tomis", desc: "Bărcile și iahturile ancorate într-o zi liniștită de vară." },
+            { src: "Imagini/Marea Neagra/4.jpg", title: "Valuri Înspumate", desc: "Puterea și frumusețea mării într-o zi cu vânt." },
+            { src: "Imagini/Marea Neagra/5.jpg", title: "Pescarusii", desc: "Gardienii zburători ai litoralului." },
+            { src: "Imagini/Marea Neagra/6.jpg", title: "Faleza", desc: "Locul perfect pentru o plimbare lungă la apus." },
+            { src: "Imagini/Marea Neagra/7.jpg", title: "Nisip Fin", desc: "Detaliu de pe plaja din Mamaia." },
+            { src: "Imagini/Marea Neagra/8.jpg", title: "Farul Genovez", desc: "Un monument istoric ce ghida odinioară corăbiile." },
+            { src: "Imagini/Marea Neagra/9.jpg", title: "Seara la Mare", desc: "Luminile orașului se reflectă în apa întunecată." },
+            { src: "Imagini/Marea Neagra/10.jpg", title: "Digul de Piatră", desc: "Punctul de întâlnire dintre om și largul mării." },
+            { src: "Imagini/Marea Neagra/11.jpg", title: "Orizont Albastru", desc: "Linia fină unde cerul se unește cu marea." }
+        ];
+
+        const bgImage = document.getElementById('bg-image');
+        const mainTitle = document.getElementById('main-title');
+        const mainDesc = document.getElementById('main-desc');
+        const sliderContainer = document.getElementById('slider-container');
+        let currentIndex = 0;
+
+        function initGallery() {
+            sliderContainer.innerHTML = ''; 
+            
+            locations.forEach((loc, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                if (index === currentIndex) card.classList.add('active'); 
+                card.onclick = () => changeSlide(index);
+                
+                card.innerHTML = `
+                    <img src="${loc.src}" onerror="this.src='https://via.placeholder.com/200x300/007bb5/ffffff?text=FOTO'" alt="${loc.title}">
+                    <div class="card-info">
+                        <h4>${loc.title}</h4>
+                    </div>
+                `;
+                sliderContainer.appendChild(card);
+            });
+            updateDisplay();
+        }
+
+        function changeSlide(index) {
+            currentIndex = index;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const currentLoc = locations[currentIndex];
+            bgImage.style.opacity = 0;
+            
+            setTimeout(() => {
+                bgImage.src = currentLoc.src;
+                bgImage.onload = () => { bgImage.style.opacity = 1; };
+                
+                mainTitle.innerText = currentLoc.title;
+                mainDesc.innerText = currentLoc.desc;
+
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+                const allCards = document.querySelectorAll('.card');
+                if(allCards[currentIndex]) {
+                    allCards[currentIndex].classList.add('active');
+                    allCards[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }, 200);
+        }
+
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.innerText = Math.random() > 0.7 ? '⭐' : '🫧'; 
+            bubble.style.left = Math.random() * 100 + 'vw'; 
+            bubble.style.animationDuration = (Math.random() * 5 + 5) + 's'; 
+            bubble.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            document.body.appendChild(bubble);
+            setTimeout(() => { bubble.remove(); }, 10000);
+        }
+
+        initGallery();
+        setInterval(createBubble, 800);
+    </script>
+</body>
+</html>

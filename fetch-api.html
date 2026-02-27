@@ -1,0 +1,528 @@
+fetch-api.html
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fetch API Date - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* --- 1. STILURI DE BAZA --- */
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Lato', sans-serif;
+        background-image: url('Imagini/Deshboard/avif\ 1.avif'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* --- 2. HEADER --- */
+    header {
+        background-color: rgba(51, 51, 51, 0.9);
+        color: white;
+        padding-top: 60px;
+        padding-bottom: 40px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        position: absolute;
+        top: -75px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .header-spacer { margin-top: 80px; position: relative; }
+
+    h1 {
+        font-family: 'Lato', sans-serif;
+        font-size: 3rem;
+        margin: 10px 0 5px 0;
+        font-weight: 400;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; }
+
+    /* --- 3. MENIU NAVIGARE (HAMBURGER) --- */
+    .navbar { 
+        background-color: rgba(144, 164, 174, 0.9); 
+        padding: 10px 20px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        position: sticky; 
+        top: 0; 
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a { 
+        color: #333; 
+        text-decoration: none; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 0.9rem; 
+        padding: 8px 15px;
+        display: inline-block; 
+        transition: 0.3s; 
+        border-radius: 4px;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+    }
+    .bar {
+        height: 3px;
+        width: 25px;
+        background-color: #333;
+        margin: 3px 0;
+        border-radius: 3px;
+        transition: 0.4s;
+    }
+
+    /* --- 4. PANOU API (DASHBOARD) --- */
+    .main-container { 
+        max-width: 1200px; 
+        margin: 60px auto; 
+        padding: 0 20px; 
+        text-align: center; 
+        flex: 1; 
+    }
+    
+    .back-btn {
+        display: inline-block;
+        color: #fff;
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        transition: 0.3s;
+        text-align: left;
+        width: 100%;
+    }
+    .back-btn:hover { color: #ddd; transform: translateX(-5px); }
+
+    h2.headline { 
+        font-family: 'Playfair Display', serif; 
+        font-size: 2.5rem; 
+        color: #fff; 
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+        margin-bottom: 30px; 
+    }
+
+    .api-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .api-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        padding: 30px;
+        width: 100%;
+        max-width: 400px; /* Cardul pt curs valutar ramane mai mic */
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.5);
+        position: relative;
+    }
+
+    /* Cardul pt Vreme va fi mai lat pentru a incapea prognoza pe 7 zile */
+    .weather-card {
+        max-width: 750px; 
+    }
+
+    .api-card h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin-top: 0;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    .api-data-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.1rem;
+        border-bottom: 1px dashed #ddd;
+        padding-bottom: 5px;
+    }
+    .data-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .data-label { font-weight: bold; color: #555; }
+    .data-value { font-weight: bold; color: #1877f2; font-size: 1.3rem; }
+
+    .btn-refresh {
+        background-color: #5d5d5d;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 1rem;
+        width: 100%;
+    }
+    .btn-refresh:hover { background-color: #333; }
+    .btn-refresh i { margin-right: 8px; }
+
+    .loading-spinner {
+        display: none;
+        font-size: 2rem;
+        color: #90a4ae;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* --- STILURI NOI PENTRU VREMEA COMPLEXA --- */
+    .current-weather {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 25px;
+        margin-bottom: 15px;
+    }
+    .cw-icon { font-size: 4rem; }
+    .cw-info { text-align: left; }
+    #cw-temp { font-size: 2.8rem; font-weight: bold; color: #1877f2; line-height: 1; margin-bottom: 5px;}
+    #cw-desc { font-size: 1.2rem; font-weight: bold; color: #555; text-transform: uppercase;}
+    #cw-wind { font-size: 1rem; color: #777; margin-top: 5px; }
+
+    .forecast-title {
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #777;
+        font-size: 0.9rem;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        text-align: left;
+    }
+
+    /* Zona cu scroll orizontal pentru cele 7 zile */
+    .forecast-row {
+        display: flex;
+        overflow-x: auto;
+        gap: 15px;
+        padding: 5px 0 15px 0;
+        scrollbar-width: thin;
+    }
+    
+    .forecast-row::-webkit-scrollbar { height: 8px; }
+    .forecast-row::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
+
+    .forecast-card-day {
+        flex: 0 0 auto;
+        width: 100px;
+        background: white;
+        border-radius: 8px;
+        padding: 15px 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #eee;
+    }
+
+    .f-date { font-weight: bold; color: #555; font-size: 0.85rem; }
+    .f-icon { font-size: 2rem; }
+    .f-desc { font-size: 0.75rem; color: #777; text-align: center; line-height: 1.2; height: 18px;}
+    .f-temp { font-weight: bold; color: #1877f2; font-size: 0.95rem; }
+
+    /* --- 5. FOOTER --- */
+    footer {
+        background-color: rgba(34, 34, 34, 0.9);
+        color: #bbb;
+        text-align: center;
+        padding: 30px 15px;
+        margin-top: 60px;
+        font-size: 0.9rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    footer span { color: #fff; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 900px) { 
+        h1 { font-size: 2rem; }
+        .navbar { display: block; text-align: left; padding: 15px 20px; min-height: 50px; }
+        .menu-toggle { display: flex; }
+        .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: rgba(0,0,0,0.05); border-radius: 4px; }
+        .nav-links.active { display: flex; }
+        .nav-links a { width: 100%; text-align: center; padding: 15px; margin: 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .nav-links a:last-child { border-bottom: none; }
+        .current-weather { flex-direction: column; gap: 10px; text-align: center; }
+        .cw-info { text-align: center; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header-spacer">
+    <header>
+        <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu" onerror="this.src='https://via.placeholder.com/150'">
+        <h1>Constantin Lupu</h1>
+        <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html" class="active">Experiment</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<div class="main-container">
+    <a href="experiment.html" class="back-btn"><i class="fas fa-arrow-left"></i> Înapoi la Laborator Web</a>
+    <h2 class="headline">Date Live (Fetch API)</h2>
+
+    <div class="api-grid">
+        
+        <div class="api-card weather-card">
+            <h3><i class="fas fa-map-marker-alt" style="color: #e74c3c;"></i> Vremea - Moara Vlăsiei</h3>
+            <div class="api-data-box" id="weather-box" style="padding: 15px;">
+                <i class="fas fa-spinner loading-spinner" id="weather-spinner"></i>
+                
+                <div id="weather-content">
+                    
+                    <div class="current-weather">
+                        <div class="cw-icon"><i class="fas fa-cloud" id="cw-icon"></i></div>
+                        <div class="cw-info">
+                            <div id="cw-temp">-- °C</div>
+                            <div id="cw-desc">--</div>
+                            <div id="cw-wind"><i class="fas fa-wind"></i> -- km/h</div>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-title">Prognoză pe 7 zile</div>
+                    
+                    <div class="forecast-row" id="forecast-row">
+                        </div>
+
+                    <p style="font-size: 0.8rem; color: #888; margin: 10px 0 0 0; text-align: left;">(Sursa date: Open-Meteo API)</p>
+                </div>
+            </div>
+            <button class="btn-refresh" onclick="getWeather()"><i class="fas fa-sync-alt"></i> Actualizează Vremea</button>
+        </div>
+
+        <div class="api-card">
+            <h3><i class="fas fa-euro-sign" style="color: #27ae60;"></i> Curs Valutar</h3>
+            <div class="api-data-box" id="currency-box">
+                <i class="fas fa-spinner loading-spinner" id="currency-spinner"></i>
+                <div id="currency-content">
+                    <div class="data-row">
+                        <span class="data-label">1 EURO (€) =</span>
+                        <span class="data-value" id="eur-val">-- Lei</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">1 USD ($) =</span>
+                        <span class="data-value" id="usd-val">-- Lei</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #888; margin: 10px 0 0 0;">(Sursa: ExchangeRate API)</p>
+                </div>
+            </div>
+            <button class="btn-refresh" onclick="getCurrency()"><i class="fas fa-sync-alt"></i> Actualizează Cursul</button>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script>
+    /* --- MENIU HAMBURGER --- */
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => { navLinks.classList.toggle('active'); });
+    }
+
+    /* --- FUNCTIE PENTRU TRADUCERE CODURI METEO IN ROMANA --- */
+    function getWeatherDetails(code) {
+        if (code === 0) return { text: "Însorit", icon: "fa-sun", color: "#f39c12" };
+        if (code >= 1 && code <= 3) return { text: "Noros", icon: "fa-cloud", color: "#95a5a6" };
+        if (code === 45 || code === 48) return { text: "Ceață", icon: "fa-smog", color: "#7f8c8d" };
+        if ((code >= 51 && code <= 55) || (code >= 61 && code <= 65) || (code >= 80 && code <= 82)) return { text: "Ploaie", icon: "fa-cloud-rain", color: "#3498db" };
+        if ((code >= 71 && code <= 77) || code === 85 || code === 86) return { text: "Ninsoare", icon: "fa-snowflake", color: "#00d2d3" };
+        if (code >= 95) return { text: "Furtună", icon: "fa-bolt", color: "#8e44ad" };
+        return { text: "Necunoscut", icon: "fa-cloud", color: "#95a5a6" };
+    }
+
+    /* --- FUNCTII FETCH API --- */
+
+    // 1. Funcția pentru Vreme (Prognoza extinsa Moara Vlăsiei)
+    async function getWeather() {
+        const spinner = document.getElementById('weather-spinner');
+        const content = document.getElementById('weather-content');
+        
+        content.style.display = 'none';
+        spinner.style.display = 'block';
+
+        try {
+            // Cerem vremea curenta + prognoza zilnica (cod, temp min, temp max)
+            const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=44.64&longitude=26.20&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto');
+            const data = await response.json();
+            
+            // --- Vremea Curenta ---
+            const currentTemp = Math.round(data.current_weather.temperature);
+            const windSpeed = data.current_weather.windspeed;
+            const currentCode = data.current_weather.weathercode;
+            const currentDetails = getWeatherDetails(currentCode);
+
+            document.getElementById('cw-temp').innerText = currentTemp + ' °C';
+            document.getElementById('cw-desc').innerText = currentDetails.text;
+            document.getElementById('cw-wind').innerHTML = `<i class="fas fa-wind"></i> Vânt: ${windSpeed} km/h`;
+            
+            const cwIcon = document.getElementById('cw-icon');
+            cwIcon.className = `fas ${currentDetails.icon}`;
+            cwIcon.style.color = currentDetails.color;
+
+            // --- Prognoza pe 7 zile ---
+            const daily = data.daily;
+            const forecastRow = document.getElementById('forecast-row');
+            forecastRow.innerHTML = ''; // Golim prognoza veche
+
+            for(let i = 0; i < daily.time.length; i++) {
+                const dateStr = daily.time[i];
+                const maxT = Math.round(daily.temperature_2m_max[i]);
+                const minT = Math.round(daily.temperature_2m_min[i]);
+                const code = daily.weathercode[i];
+                const details = getWeatherDetails(code);
+                
+                // Formatam data (ex: Lun, 27 oct)
+                const dateObj = new Date(dateStr);
+                const options = { weekday: 'short', day: 'numeric', month: 'short' };
+                // .replace('.', '') scoate punctul de la 'oct.' daca exista, pt a arata mai curat
+                const dateFormatted = dateObj.toLocaleDateString('ro-RO', options).replace('.', '');
+
+                const cardHTML = `
+                    <div class="forecast-card-day">
+                        <span class="f-date">${dateFormatted}</span>
+                        <i class="fas ${details.icon} f-icon" style="color: ${details.color};"></i>
+                        <span class="f-desc">${details.text}</span>
+                        <span class="f-temp">${minT}° / ${maxT}°</span>
+                    </div>
+                `;
+                forecastRow.insertAdjacentHTML('beforeend', cardHTML);
+            }
+
+        } catch (error) {
+            document.getElementById('cw-temp').innerText = 'Eroare';
+            document.getElementById('cw-desc').innerText = 'Nu s-au putut prelua datele.';
+        } finally {
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                content.style.display = 'block';
+            }, 600); 
+        }
+    }
+
+    // 2. Funcția pentru Curs Valutar
+    async function getCurrency() {
+        const spinner = document.getElementById('currency-spinner');
+        const content = document.getElementById('currency-content');
+        
+        content.style.display = 'none';
+        spinner.style.display = 'block';
+
+        try {
+            const response = await fetch('https://open.er-api.com/v6/latest/EUR');
+            const data = await response.json();
+            
+            const rateRon = data.rates.RON; 
+            const rateUsd = data.rates.USD;
+            const usdToRon = rateRon / rateUsd;
+
+            document.getElementById('eur-val').innerText = rateRon.toFixed(4) + ' Lei';
+            document.getElementById('usd-val').innerText = usdToRon.toFixed(4) + ' Lei';
+        } catch (error) {
+            document.getElementById('eur-val').innerText = 'Eroare conexiune';
+            document.getElementById('usd-val').innerText = 'Eroare conexiune';
+        } finally {
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                content.style.display = 'block';
+            }, 600);
+        }
+    }
+
+    // Incarcam datele automat
+    window.onload = () => {
+        getWeather();
+        getCurrency();
+    };
+</script>
+
+</body>
+</html>

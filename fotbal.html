@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Fotbal - Penalty - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    body { margin: 0; padding: 0; font-family: 'Lato', sans-serif; background-color: #1a1a2e; color: #eee; display: flex; flex-direction: column; min-height: 100vh; align-items: center; }
+    header { background-color: #0f3460; padding: 25px 20px; text-align: center; border-bottom: 4px solid #4CAF50; width: 100%; box-sizing: border-box; position: relative; }
+    h1 { margin: 0; color: #fff; font-family: 'Playfair Display', serif; font-size: 2.2rem; }
+    p.subtitle { color: #ccc; margin-top: 5px; font-weight: 300; font-size: 1rem; }
+    
+    .nav-back { position: absolute; top: 25px; left: 20px; text-decoration: none; color: #fff; background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 0.3s; border: 1px solid rgba(255,255,255,0.2); }
+    .nav-back:hover { background: #4CAF50; border-color: #4CAF50; transform: translateX(-5px); }
+
+    .game-container { margin-top: 30px; display: flex; flex-direction: column; align-items: center; position: relative; }
+    
+    .score-board { display: flex; gap: 30px; margin-bottom: 15px; font-size: 1.5rem; font-weight: bold; background: #16213e; padding: 10px 30px; border-radius: 10px; border: 2px solid #0f3460; }
+    .score-board span { color: #4CAF50; }
+
+    canvas { background-color: #2e7d32; border: 5px solid #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: crosshair; touch-action: none; max-width: 100%; }
+
+    .instructions { margin-top: 20px; text-align: center; color: #aaa; font-size: 0.9rem; max-width: 400px; line-height: 1.5; padding: 0 15px;}
+
+    /* --- STILURI PENTRU MESAJELE DIN JOC --- */
+    .game-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 15px;
+        font-size: 2.2rem;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        pointer-events: none;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 10;
+        white-space: nowrap;
+    }
+    .game-message.show {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    @media (max-width: 600px) {
+        .nav-back { position: static; display: inline-block; margin-bottom: 20px; }
+        header { text-align: left; padding-bottom: 20px; }
+        canvas { width: 95vw; height: auto; }
+        .game-message { font-size: 1.5rem; padding: 15px 20px; white-space: normal; width: 80%; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <a href="jocuri.html" class="nav-back">⬅ Înapoi la Jocuri</a>
+    <h1>Penalty Shootout</h1>
+    <p class="subtitle">Trage de minge în spate pentru a șuta!</p>
+</header>
+
+<div class="game-container">
+    <div class="score-board">
+        <div>Goluri: <span id="score">0</span></div>
+        <div>Ratări: <span id="misses" style="color: #e94560;">0</span></div>
+    </div>
+    
+    <div id="gameMessage" class="game-message"></div>
+
+    <canvas id="gameCanvas" width="400" height="500"></canvas>
+
+    <div class="instructions">
+        <b>Cum se joacă:</b> Apasă pe minge, trage în jos/spate pentru a stabili puterea și unghiul (ca o praștie), apoi dă drumul pentru a șuta. Încearcă să învingi portarul!
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let score = 0;
+    let misses = 0;
+
+    const goal = { x: 100, y: 10, width: 200, height: 40 };
+    const goalie = { x: 170, y: 50, width: 60, height: 15, speed: 3, dx: 3 };
+    const ball = { x: 200, y: 400, radius: 12, vx: 0, vy: 0, isDragging: false, isShooting: false, startX: 200, startY: 400 };
+
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    // Functie dinamica pentru mesaje (GOL sau RATARE)
+    function showMessage(type) {
+        const msgBox = document.getElementById("gameMessage");
+        
+        if (type === 'goal') {
+            msgBox.style.background = "rgba(76, 175, 80, 0.95)"; // Verde pentru GOL
+            msgBox.innerHTML = "GOOOL !";
+        } else {
+            msgBox.style.background = "rgba(233, 69, 96, 0.95)"; // Rosu pentru RATARE
+            msgBox.innerHTML = "Hai că poți, nu renunța!";
+        }
+
+        msgBox.classList.add("show");
+        
+        // Ascunde mesajul dupa 1.5 secunde
+        setTimeout(() => {
+            msgBox.classList.remove("show");
+        }, 1500);
+    }
+
+    function resetBall() {
+        ball.x = 200;
+        ball.y = 400;
+        ball.vx = 0;
+        ball.vy = 0;
+        ball.isShooting = false;
+        goalie.speed = 3 + (score * 0.5); 
+    }
+
+    function updateScoreBoard() {
+        document.getElementById("score").innerText = score;
+        document.getElementById("misses").innerText = misses;
+    }
+
+    function drawField() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.lineWidth = 3;
+        
+        ctx.strokeRect(50, 0, 300, 150);
+        
+        ctx.beginPath();
+        ctx.arc(200, 400, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.fill();
+        ctx.closePath();
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(goal.x, goal.y, goal.width, 5);
+        ctx.fillRect(goal.x, goal.y, 5, goal.height);
+        ctx.fillRect(goal.x + goal.width - 5, goal.y, 5, goal.height);
+        
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+
+        ctx.fillStyle = "#e94560";
+        ctx.fillRect(goalie.x, goalie.y, goalie.width, goalie.height);
+
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.closePath();
+
+        if (ball.isDragging) {
+            ctx.beginPath();
+            ctx.moveTo(ball.x, ball.y);
+            ctx.lineTo(ball.x - (dragStartX - ball.x), ball.y - (dragStartY - ball.y));
+            ctx.strokeStyle = "rgba(255, 255, 0, 0.5)";
+            ctx.lineWidth = 4;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.closePath();
+        }
+    }
+
+    function update() {
+        goalie.x += goalie.dx;
+        if (goalie.x < goal.x || goalie.x + goalie.width > goal.x + goal.width) {
+            goalie.dx *= -1;
+        }
+
+        if (ball.isShooting) {
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            ball.vx *= 0.98;
+            ball.vy *= 0.98;
+
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
+                ball.vx *= -1;
+            }
+
+            // A iesit din teren sus/jos SAU s-a oprit (RATARE)
+            if (ball.y < 0 || ball.y > canvas.height || (Math.abs(ball.vx) < 0.1 && Math.abs(ball.vy) < 0.1)) {
+                misses++;
+                updateScoreBoard();
+                showMessage('miss'); // Afiseaza mesaj ratare
+                resetBall();
+            }
+
+            // Coliziune cu portarul (RATARE)
+            else if (ball.x > goalie.x && ball.x < goalie.x + goalie.width &&
+                ball.y - ball.radius < goalie.y + goalie.height && ball.y + ball.radius > goalie.y) {
+                ball.vy *= -1; 
+                setTimeout(() => {
+                    misses++;
+                    updateScoreBoard();
+                    showMessage('miss'); // Afiseaza mesaj ratare
+                    resetBall();
+                }, 400);
+            }
+
+            // A intrat in poarta (GOL)
+            else if (ball.x > goal.x && ball.x < goal.x + goal.width && ball.y - ball.radius < goal.y + goal.height) {
+                score++;
+                updateScoreBoard();
+                showMessage('goal'); // Afiseaza mesaj gol
+                resetBall();
+            }
+        }
+    }
+
+    function gameLoop() {
+        update();
+        drawField();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function startDrag(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        const mouseX = (clientX - rect.left) * scaleX;
+        const mouseY = (clientY - rect.top) * scaleY;
+
+        const dist = Math.sqrt((mouseX - ball.x)**2 + (mouseY - ball.y)**2);
+        if (dist < ball.radius * 3 && !ball.isShooting) { 
+            ball.isDragging = true;
+            dragStartX = mouseX;
+            dragStartY = mouseY;
+        }
+    }
+
+    function moveDrag(clientX, clientY) {
+        if (ball.isDragging) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            dragStartX = (clientX - rect.left) * scaleX;
+            dragStartY = (clientY - top) * scaleY;
+            dragStartY = (clientY - rect.top) * scaleY;
+        }
+    }
+
+    function endDrag() {
+        if (ball.isDragging) {
+            ball.isDragging = false;
+            ball.isShooting = true;
+            let powerX = (ball.x - dragStartX) * 0.15;
+            let powerY = (ball.y - dragStartY) * 0.15;
+            
+            ball.vx = powerX;
+            ball.vy = powerY;
+        }
+    }
+
+    canvas.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+    canvas.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+    window.addEventListener('mouseup', endDrag);
+
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+    window.addEventListener('touchend', endDrag);
+
+    gameLoop();
+</script>
+
+</body>
+</html>

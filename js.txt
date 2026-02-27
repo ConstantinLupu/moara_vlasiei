@@ -1,0 +1,5 @@
+{
+    src: "poza4.jpg",
+    desc: "Descrierea pozei 4"
+}
+

@@ -1,0 +1,487 @@
+space.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Space Shooter - Full Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { 
+            background-color: #0d0d15; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            overflow: hidden; /* Fara scroll */
+            touch-action: none; 
+            user-select: none;
+        }
+        
+        #gameWrapper {
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.1);
+        }
+
+        canvas { 
+            background: #000; 
+            display: block; 
+            border: 2px solid #333;
+            border-bottom: none; /* Se uneste cu controalele */
+        }
+
+        /* UI Bar de sus */
+        .ui-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 320px;
+            background: #111;
+            padding: 5px 10px;
+            box-sizing: border-box;
+            border: 2px solid #333;
+            border-bottom: none;
+            font-size: 14px;
+            font-weight: bold;
+            color: #0ff;
+        }
+
+        /* Meniu Suprapus */
+        #gameMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        h1 { margin: 0 0 10px 0; font-size: 28px; text-transform: uppercase; color: #0ff; text-shadow: 0 0 10px #0ff; }
+        p { color: #aaa; margin: 5px 0 20px 0; font-size: 14px; }
+        .big-text { font-size: 24px; color: gold; margin: 10px 0; }
+
+        button {
+            padding: 12px 20px;
+            margin: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            width: 200px;
+            text-transform: uppercase;
+        }
+        .btn-green { background: #0f0; color: #000; box-shadow: 0 0 10px #0f0; }
+        .btn-red { background: #f00; color: #fff; }
+
+        /* --- CONTROALE MOBILE (Gamepad Style) --- */
+        #mobileControls {
+            width: 320px;
+            height: 100px;
+            background: #111;
+            border: 2px solid #333;
+            border-top: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        .d-pad {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ctrl-btn {
+            width: 60px;
+            height: 60px;
+            background: #222;
+            border: 2px solid #444;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            cursor: pointer;
+        }
+        
+        .ctrl-btn:active { background: #444; transform: scale(0.95); }
+        .btn-fire { background: #500; border-color: #f00; width: 70px; height: 70px; font-size: 16px; font-weight: bold; box-shadow: 0 0 10px #f00; }
+        
+    </style>
+</head>
+<body>
+
+<div class="ui-bar">
+    <span>SCOR: <span id="scoreVal">0</span></span>
+    <span>LEVEL: <span id="levelVal">1</span></span>
+    <span>MAX: <span id="highScoreVal">0</span></span>
+</div>
+
+<div id="gameWrapper">
+    <canvas id="gameCanvas" width="320" height="400"></canvas>
+    
+    <div id="gameMenu">
+        <h1 id="menuTitle">SPACE SHOOTER</h1>
+        <p>Apară Pământul de invazie!</p>
+        <div id="finalScore" class="big-text" style="display:none;">0</div>
+        
+        <button id="btnStart" class="btn-green" onclick="startGame()">START JOC</button>
+        <button id="btnContinue" class="btn-green" style="display:none;" onclick="continueGame()">CONTINUĂ</button>
+        <button id="btnRestart" class="btn-red" style="display:none;" onclick="resetGame()">JOC NOU</button>
+    </div>
+</div>
+
+<div id="mobileControls">
+    <div class="d-pad">
+        <div class="ctrl-btn" id="btnLeft">◀</div>
+        <div class="ctrl-btn" id="btnRight">▶</div>
+    </div>
+    <div class="ctrl-btn btn-fire" id="btnFire">FOC</div>
+</div>
+
+<p style="color: #555; font-size: 12px; margin-top: 5px;">PC: Săgeți + SPACE | Mobil: Butoane</p>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Elemente UI
+    const menu = document.getElementById('gameMenu');
+    const menuTitle = document.getElementById('menuTitle');
+    const btnStart = document.getElementById('btnStart');
+    const btnContinue = document.getElementById('btnContinue');
+    const btnRestart = document.getElementById('btnRestart');
+    const finalScoreDisplay = document.getElementById('finalScore');
+    
+    const uiScore = document.getElementById('scoreVal');
+    const uiLevel = document.getElementById('levelVal');
+    const uiHigh = document.getElementById('highScoreVal');
+
+    // Variabile Joc
+    let gameRunning = false;
+    let score = 0;
+    let level = 1;
+    let highScore = localStorage.getItem('space_highscore') || 0;
+    uiHigh.innerText = highScore;
+
+    // Jucator
+    let player = {
+        x: canvas.width / 2 - 15,
+        y: canvas.height - 40,
+        w: 30,
+        h: 20,
+        speed: 5,
+        color: '#0ff',
+        dx: 0
+    };
+
+    // Proiectile
+    let bullets = [];
+    let bulletSpeed = 7;
+    let lastShot = 0;
+
+    // Inamici
+    let enemies = [];
+    let enemyRows = 4;
+    let enemyCols = 6;
+    let enemyW = 30;
+    let enemyH = 20;
+    let enemyPadding = 10;
+    let enemyOffsetTop = 30;
+    let enemyOffsetLeft = 20;
+    let enemySpeed = 1; // Creste cu nivelul
+    let enemyDirection = 1; // 1 = dreapta, -1 = stanga
+
+    // Controale
+    let rightPressed = false;
+    let leftPressed = false;
+    let spacePressed = false;
+
+    // --- SETUP & LOGIC ---
+
+    function initEnemies() {
+        enemies = [];
+        for(let c=0; c<enemyCols; c++) {
+            for(let r=0; r<enemyRows; r++) {
+                let enemyX = (c * (enemyW + enemyPadding)) + enemyOffsetLeft;
+                let enemyY = (r * (enemyH + enemyPadding)) + enemyOffsetTop;
+                // Culori diferite pe randuri
+                let color = r == 0 ? '#f00' : (r == 1 ? '#fa0' : '#0f0');
+                enemies.push({ x: enemyX, y: enemyY, w: enemyW, h: enemyH, status: 1, color: color });
+            }
+        }
+    }
+
+    function drawPlayer() {
+        ctx.fillStyle = player.color;
+        // Desenam o nava simpla (triunghi)
+        ctx.beginPath();
+        ctx.moveTo(player.x + player.w/2, player.y);
+        ctx.lineTo(player.x + player.w, player.y + player.h);
+        ctx.lineTo(player.x, player.y + player.h);
+        ctx.fill();
+    }
+
+    function drawBullets() {
+        ctx.fillStyle = '#ff0';
+        bullets.forEach(b => {
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+        });
+    }
+
+    function drawEnemies() {
+        enemies.forEach(e => {
+            if(e.status === 1) {
+                ctx.fillStyle = e.color;
+                // Desenam inamicii ca mici dreptunghiuri cu "ochi"
+                ctx.fillRect(e.x, e.y, e.w, e.h);
+                // Ochi
+                ctx.fillStyle = '#000';
+                ctx.fillRect(e.x + 5, e.y + 5, 5, 5);
+                ctx.fillRect(e.x + e.w - 10, e.y + 5, 5, 5);
+            }
+        });
+    }
+
+    function update() {
+        if(!gameRunning) return;
+
+        // Miscare Jucator
+        if(rightPressed && player.x < canvas.width - player.w) {
+            player.x += player.speed;
+        } else if(leftPressed && player.x > 0) {
+            player.x -= player.speed;
+        }
+
+        // Tragere (Auto-fire daca tii apasat, dar cu delay)
+        if(spacePressed) {
+            let now = Date.now();
+            if(now - lastShot > 300) { // Cadenta tragere
+                bullets.push({ x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 10 });
+                lastShot = now;
+            }
+        }
+
+        // Update Proiectile
+        for(let i = 0; i < bullets.length; i++) {
+            bullets[i].y -= bulletSpeed;
+            // Sterge daca iese din ecran
+            if(bullets[i].y < 0) {
+                bullets.splice(i, 1);
+                i--;
+                continue;
+            }
+            
+            // Verificare Coliziune cu Inamicii
+            let hit = false;
+            for(let j = 0; j < enemies.length; j++) {
+                let e = enemies[j];
+                if(e.status === 1) {
+                    if(bullets[i].x > e.x && bullets[i].x < e.x + e.w &&
+                       bullets[i].y > e.y && bullets[i].y < e.y + e.h) {
+                        e.status = 0;
+                        bullets.splice(i, 1);
+                        i--;
+                        hit = true;
+                        score += 10;
+                        updateUI();
+                        checkLevelComplete();
+                        break;
+                    }
+                }
+            }
+            if(hit) continue;
+        }
+
+        // Miscare Inamici
+        let hitWall = false;
+        let activeEnemies = false;
+
+        enemies.forEach(e => {
+            if(e.status === 1) {
+                activeEnemies = true;
+                e.x += enemySpeed * enemyDirection;
+                
+                // Verifica daca lovesc marginile
+                if(e.x + e.w > canvas.width || e.x < 0) {
+                    hitWall = true;
+                }
+
+                // Game Over daca ajung jos la jucator
+                if(e.y + e.h > player.y) {
+                    gameOver();
+                }
+            }
+        });
+
+        if(hitWall) {
+            enemyDirection *= -1; // Schimba directia
+            enemies.forEach(e => {
+                e.y += 20; // Coboara un rand
+            });
+        }
+    }
+
+    function checkLevelComplete() {
+        let remaining = enemies.filter(e => e.status === 1).length;
+        if(remaining === 0) {
+            gameRunning = false;
+            showMenu('WIN');
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Efect stele fundal
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        for(let i=0; i<10; i++) {
+            let sx = Math.random() * canvas.width;
+            let sy = Math.random() * canvas.height;
+            ctx.fillRect(sx, sy, 2, 2);
+        }
+
+        drawPlayer();
+        drawBullets();
+        drawEnemies();
+
+        update();
+        if(gameRunning) requestAnimationFrame(draw);
+    }
+
+    // --- GAME STATES ---
+
+    function startGame() {
+        resetGameVars();
+        initEnemies();
+        gameRunning = true;
+        menu.style.display = 'none';
+        draw();
+    }
+
+    function continueGame() {
+        level++;
+        enemySpeed += 0.5; // Inamicii devin mai rapizi
+        bullets = [];
+        player.x = canvas.width / 2 - 15;
+        initEnemies();
+        gameRunning = true;
+        menu.style.display = 'none';
+        updateUI();
+        draw();
+    }
+
+    function resetGame() {
+        score = 0;
+        level = 1;
+        enemySpeed = 1;
+        resetGameVars();
+        initEnemies();
+        gameRunning = true;
+        menu.style.display = 'none';
+        updateUI();
+        draw();
+    }
+
+    function resetGameVars() {
+        bullets = [];
+        player.x = canvas.width / 2 - 15;
+        enemyDirection = 1;
+    }
+
+    function gameOver() {
+        gameRunning = false;
+        showMenu('GAMEOVER');
+    }
+
+    function showMenu(type) {
+        menu.style.display = 'flex';
+        btnStart.style.display = 'none';
+        finalScoreDisplay.style.display = 'block';
+        finalScoreDisplay.innerText = "SCOR: " + score;
+
+        if(type === 'GAMEOVER') {
+            menuTitle.innerText = "GAME OVER";
+            menuTitle.style.color = "red";
+            btnContinue.style.display = 'none'; // Nu poti continua daca ai murit
+            btnRestart.style.display = 'block';
+        } else if (type === 'WIN') {
+            menuTitle.innerText = "NIVEL COMPLET";
+            menuTitle.style.color = "#0f0";
+            btnContinue.style.display = 'block';
+            btnRestart.style.display = 'block';
+        }
+    }
+
+    function updateUI() {
+        uiScore.innerText = score;
+        uiLevel.innerText = level;
+        if(score > highScore) {
+            highScore = score;
+            localStorage.setItem('space_highscore', highScore);
+            uiHigh.innerText = highScore;
+        }
+    }
+
+    // --- EVENTS (PC & MOBILE) ---
+
+    // Tastatura
+    document.addEventListener('keydown', (e) => {
+        if(e.code === 'ArrowRight' || e.key === 'd') rightPressed = true;
+        if(e.code === 'ArrowLeft' || e.key === 'a') leftPressed = true;
+        if(e.code === 'Space') {
+            spacePressed = true;
+            // Previne scroll paginii la Space
+            e.preventDefault(); 
+        }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if(e.code === 'ArrowRight' || e.key === 'd') rightPressed = false;
+        if(e.code === 'ArrowLeft' || e.key === 'a') leftPressed = false;
+        if(e.code === 'Space') spacePressed = false;
+    });
+
+    // Touch Mobile (Butoane pe ecran)
+    const btnLeft = document.getElementById('btnLeft');
+    const btnRight = document.getElementById('btnRight');
+    const btnFire = document.getElementById('btnFire');
+
+    // Functii ajutatoare pentru touch
+    const handleTouchStart = (btn, action) => {
+        btn.addEventListener('touchstart', (e) => { e.preventDefault(); action(true); });
+        btn.addEventListener('mousedown', (e) => { e.preventDefault(); action(true); });
+    };
+    const handleTouchEnd = (btn, action) => {
+        btn.addEventListener('touchend', (e) => { e.preventDefault(); action(false); });
+        btn.addEventListener('mouseup', (e) => { e.preventDefault(); action(false); });
+    };
+
+    handleTouchStart(btnLeft, (val) => leftPressed = val);
+    handleTouchEnd(btnLeft, (val) => leftPressed = val);
+
+    handleTouchStart(btnRight, (val) => rightPressed = val);
+    handleTouchEnd(btnRight, (val) => rightPressed = val);
+
+    handleTouchStart(btnFire, (val) => spacePressed = val);
+    handleTouchEnd(btnFire, (val) => spacePressed = val);
+
+    // Initial Draw
+    initEnemies();
+    drawPlayer();
+    drawEnemies();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Despre Mine - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* --- RESET SI STILURI DE BAZA --- */
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Lato', sans-serif;
+        
+        /* AICI ESTE IMAGINEA DE FUNDAL */
+        background-image: url('Imagini/Deshboard/avif\ 1.avif'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* HEADER NEGRU ELEGANT - Usor transparent */
+    header {
+        background-color: rgba(51, 51, 51, 0.9);
+        color: white;
+        padding-top: 60px;
+        padding-bottom: 40px;
+        text-align: center;
+        position: relative;
+    }
+    
+    /* POZA DE PROFIL */
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        position: absolute;
+        top: -75px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .header-spacer { margin-top: 80px; position: relative; }
+
+    h1 {
+        font-family: 'Lato', sans-serif;
+        font-size: 3rem;
+        margin: 10px 0 5px 0;
+        font-weight: 400;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; }
+
+    /* --- MENIUL NAVIGARE (MODIFICAT PENTRU HAMBURGER) --- */
+    .navbar { 
+        background-color: rgba(144, 164, 174, 0.9); 
+        padding: 10px 20px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        position: sticky; 
+        top: 0; 
+        z-index: 100;
+        display: flex;
+        justify-content: center; /* Centrat pe desktop */
+        align-items: center;
+    }
+
+    /* Lista de link-uri (container) */
+    .nav-links {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a { 
+        color: #333; 
+        text-decoration: none; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 0.9rem; 
+        padding: 8px 15px;
+        display: inline-block; 
+        transition: 0.3s; 
+        border-radius: 4px;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+    /* Butonul Hamburger (Ascuns pe Desktop) */
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+    }
+    .bar {
+        height: 3px;
+        width: 25px;
+        background-color: #333;
+        margin: 3px 0;
+        border-radius: 3px;
+        transition: 0.4s;
+    }
+
+    /* CONTINUT */
+    .main-container { 
+        max-width: 1100px; 
+        margin: 60px auto; 
+        padding: 30px; 
+        display: flex; 
+        align-items: center; 
+        gap: 50px; 
+        flex: 1; 
+        
+        /* Fundal adaugat pentru vizibilitate peste poza */
+        background-color: rgba(255, 255, 255, 0.85);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .text-column { flex: 1; }
+    .image-column { flex: 1; }
+    
+    h2.headline { 
+        font-family: 'Playfair Display', serif; 
+        font-size: 2.2rem; 
+        color: #222; 
+        margin-bottom: 20px; 
+    }
+    
+    p.description { 
+        font-size: 1.1rem; 
+        color: #444; 
+        margin-bottom: 30px; 
+        font-weight: 500;
+    }
+    
+    /* Stil Butoane */
+    .btn-contact { 
+        display: inline-block; 
+        background-color: #5d5d5d; 
+        color: white; 
+        padding: 12px 30px; 
+        border-radius: 50px; 
+        text-decoration: none; 
+        font-weight: bold; 
+        transition: background 0.3s;
+        margin-bottom: 10px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .btn-contact:hover { background-color: #333; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+    .btn-moara { background-color: #607d8b; margin-left: 10px; }
+    .btn-moara:hover { background-color: #455a64; }
+    
+    .feature-image { 
+        width: 100%; 
+        border-radius: 10px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        display: block; 
+    }
+
+    /* --- FOOTER / COPYRIGHT --- */
+    footer {
+        background-color: rgba(34, 34, 34, 0.9);
+        padding: 20px 10px;
+        text-align: center;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin-top: 40px;
+    }
+
+    .copyright {
+        font-size: 0.9rem;
+        color: #fff;
+        margin: 0;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    /* --- ADAPTARE PENTRU TELEFON (RESPONSIVE) --- */
+    @media (max-width: 900px) { 
+        /* Titlul mai mic pe telefon */
+        h1 { font-size: 2.2rem; }
+        .subtitle { font-size: 1rem; padding: 0 10px; }
+
+        /* Containerul devine o singură coloană */
+        .main-container { 
+            flex-direction: column; 
+            text-align: center; 
+            margin: 30px 15px; /* Margini laterale pentru mobil */
+            padding: 20px;
+            gap: 30px;
+        } 
+        
+        /* Video-ul apare primul, apoi textul */
+        .image-column { order: -1; margin-bottom: 10px; } 
+
+        /* Butoanele devin late (full width) */
+        .btn-contact {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            margin-left: 0 !important;
+        }
+        
+        h2.headline { font-size: 1.8rem; }
+        p.description { font-size: 1rem; text-align: justify; }
+
+        /* --- MODIFICARI MENIU PENTRU MOBIL (HAMBURGER) --- */
+        .navbar {
+            display: block; /* Nu mai e flex pe containerul mare */
+            text-align: left;
+            padding: 15px 20px;
+            min-height: 50px;
+        }
+
+        .menu-toggle {
+            display: flex; /* Aratam butonul hamburger */
+        }
+
+        .nav-links {
+            display: none; /* Ascundem link-urile initial */
+            flex-direction: column;
+            width: 100%;
+            margin-top: 20px; /* Spatiu sub buton */
+            gap: 0;
+            background: rgba(0,0,0,0.05); /* Fundal usor inchis pt meniu */
+            border-radius: 4px;
+        }
+
+        /* Clasa care activeaza meniul (o punem cu JS) */
+        .nav-links.active {
+            display: flex;
+        }
+
+        .nav-links a {
+            width: 100%;
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .nav-links a:last-child { border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header-spacer">
+    <header>
+        <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu">
+        <h1>Constantin Lupu</h1>
+        <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html" class="active">Despre mine</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html">Experiment</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<main class="main-container">
+    <div class="text-column">
+        <h2 class="headline">Locuiesc în <strong>Moara Vlăsiei</strong>.<br>Călătoresc <strong>peste tot</strong>.</h2>
+        <p class="description">
+            Sunt un călător neobosit. Îmi place să plec, să explorez, să mă pierd și să mă regăsesc în locuri noi, știind mereu că am cel mai frumos loc unde să mă întorc. Această dualitate – între stabilitatea de acasă și dinamismul călătoriilor – este ceea ce mă definește ca om.
+            <br><br>
+            Apasă pe butoanele de mai jos pentru a naviga.
+        </p>
+        
+        <a href="index.html" class="btn-contact">Înapoi la Acasă</a>
+        <a href="prezentare.html" class="btn-contact btn-moara">Prezentare Moara Vlăsiei</a>
+    </div>
+
+    <div class="image-column">
+        <video class="feature-image" autoplay muted loop playsinline controls>
+            <source src="video/mp 4.mp4" type="video/mp4">
+            Browser-ul tău nu suportă elementul video.
+        </video>
+    </div>
+</main>
+
+<footer>
+    <p class="copyright">© 2026 Creator WebSite & Pasionat de Drumeții - Lupu Constantin. Toate drepturile rezervate.</p>
+</footer>
+
+<script>
+    /* -------------------------------------------
+       FUNCȚIONALITATE MENIU HAMBURGER
+    ------------------------------------------- */
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            // Adaugam sau scoatem clasa 'active' pentru a afisa/ascunde meniul
+            navLinks.classList.toggle('active');
+        });
+    }
+</script>
+
+</body>
+</html>
