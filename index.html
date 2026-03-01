@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0; padding: 0;
+        font-family: 'Lato', sans-serif;
+        background-image: url('Imagini/Deshboard/avif\ 1.avif');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    header {
+        background-color: rgba(51, 51, 51, 0.9);
+        color: white;
+        padding-top: 60px;
+        padding-bottom: 40px;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+
+    .profile-link {
+        display: block;
+        position: absolute;
+        top: -75px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-decoration: none;
+        z-index: 10;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        transition: transform 0.3s;
+        background-color: #fff;
+    }
+    
+    .profile-avatar:hover { transform: scale(1.05); }
+    
+    .header-spacer { margin-top: 80px; position: relative; }
+
+    .header-content-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px;
+        gap: 40px;
+    }
+
+    .header-info {
+        flex: 1;
+        text-align: right;
+    }
+
+    h1 { font-family: 'Lato', sans-serif; font-size: 3rem; margin: 10px 0 5px 0; font-weight: 400; line-height: 1.2; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);}
+    h1 a { color: white; text-decoration: none; transition: color 0.3s; }
+    h1 a:hover { color: #ccc; }
+    
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; margin-bottom: 15px; }
+
+    .social-container {
+        margin-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .social-icon {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+        text-decoration: none;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .social-icon:hover { background-color: #fff; color: #333; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+    .header-video-container {
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .header-video {
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        border: 2px solid rgba(255,255,255,0.2);
+        display: block;
+    }
+
+    .header-time-container {
+        flex: 1;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 30px 20px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-width: 300px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .clock-display { font-family: 'Lato', sans-serif; font-size: 2.5rem; font-weight: bold; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
+    .date-display { font-size: 1.1rem; color: #ddd; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* --- MENIU NAVIGARE ORIZONTAL (Adugat din celelalte pagini) --- */
+    .navbar { 
+        background-color: rgba(144, 164, 174, 0.9); 
+        padding: 10px 20px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        position: sticky; 
+        top: 0; 
+        z-index: 100;
+        display: flex;
+        justify-content: center; /* Centrat pe desktop */
+        align-items: center;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a { 
+        color: #333; 
+        text-decoration: none; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 0.9rem; 
+        padding: 8px 15px;
+        display: inline-block; 
+        transition: 0.3s; 
+        border-radius: 4px;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+    }
+    .bar {
+        height: 3px;
+        width: 25px;
+        background-color: #333;
+        margin: 3px 0;
+        border-radius: 3px;
+        transition: 0.4s;
+    }
+
+    /* --- CONTINUT PAGINA (Widget-ul de Sumar a ramas in stanga) --- */
+    .layout-wrapper {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        max-width: 1300px;
+        margin: 40px auto;
+        width: 100%;
+        padding: 0 20px;
+        gap: 30px;
+        flex: 1;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-width: 320px;
+        padding: 10px;
+        height: fit-content;
+        flex-shrink: 0;
+    }
+
+    .sidebar-widget {
+        background-color: rgba(0, 0, 0, 0.5); /* I-am dat un mic fundal widget-ului ca sa arate ca un panou */
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .widget-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        margin-top: 0;
+        border-bottom: 2px solid rgba(255,255,255,0.3);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        color: #fff;
+        text-align: center;
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.9);
+    }
+    
+    .stats-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        border-bottom: 1px dashed rgba(255,255,255,0.3);
+        padding-bottom: 10px;
+        font-size: 1.05rem;
+        color: #fff;
+        font-weight: 600;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+    }
+    
+    .fade-update { animation: highlight 1s ease; }
+    
+    @keyframes highlight {
+        0% { color: #fff; transform: scale(1); }
+        50% { color: #a9bac0; transform: scale(1.1); }
+        100% { color: #fff; transform: scale(1); }
+    }
+
+    .main-footer {
+        background-color: rgba(34, 34, 34, 0.9);
+        color: #bbb;
+        text-align: center;
+        padding: 20px;
+        font-size: 0.9rem;
+        margin-top: auto;
+    }
+    
+    .main-footer span { color: #fff; font-weight: bold; }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 1024px) {
+        .layout-wrapper { flex-direction: column; }
+        .sidebar { max-width: 100%; }
+    }
+
+    @media (max-width: 900px) {
+        .header-content-wrapper { flex-direction: column; text-align: center; gap: 30px; }
+        .header-info { text-align: center; }
+        .social-container { justify-content: center; }
+        .header-video-container { max-width: 100%; width: 100%; }
+        .header-time-container { max-width: 100%; width: 100%; }
+        h1 { font-size: 2.2rem; }
+        .subtitle { font-size: 1rem; }
+        .profile-avatar { width: 120px; height: 120px; top: -60px; }
+        .header-spacer { margin-top: 60px; }
+
+        /* Meniu de mobil */
+        .navbar {
+            display: block; 
+            text-align: left;
+            padding: 15px 20px;
+            min-height: 50px;
+        }
+
+        .menu-toggle { display: flex; }
+
+        .nav-links {
+            display: none; 
+            flex-direction: column;
+            width: 100%;
+            margin-top: 20px; 
+            gap: 0;
+            background: rgba(0,0,0,0.05); 
+            border-radius: 4px;
+        }
+
+        .nav-links.active { display: flex; }
+
+        .nav-links a {
+            width: 100%;
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .nav-links a:last-child { border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header-spacer">
+    <header>
+        <a href="index.html" class="profile-link">
+            <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu">
+        </a>
+
+        <div class="header-content-wrapper">
+            <div class="header-info">
+                <h1><a href="index.html">Constantin Lupu</a></h1>
+                <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+                
+                <div class="social-container">
+                    <a href="https://www.facebook.com/" target="_blank" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com/" target="_blank" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="https://www.instagram.com/" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/" target="_blank" class="social-icon"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+
+            <div class="header-video-container">
+                <video class="header-video" autoplay loop muted playsinline controls>
+                    <source src="video/costel mp 4.mp4" type="video/mp4">
+                    Browserul tău nu suportă elementul video.
+                </video>
+            </div>
+
+            <div class="header-time-container">
+                <div id="clock" class="clock-display">00:00:00</div>
+                <div id="date" class="date-display">...</div>
+            </div>
+        </div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html" class="active">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="amintiri.html">Amintiri</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html">Experiment</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<div class="layout-wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-widget">
+            <h3 class="widget-title">Sumar</h3>
+            <div class="stats-row">
+                <span>Vizitatori azi (Est):</span>
+                <strong id="vizitatori">128</strong>
+            </div>
+            <div class="stats-row">
+                <span>Mesaje noi:</span>
+                <strong id="mesaje">4</strong>
+            </div>
+            <div class="stats-row" style="border: none;">
+                <span>Timp (Cumulat):</span>
+                <strong id="timp-online">0h 0m 0s</strong>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 20px;">
+                <span style="font-size: 0.85rem; color: #fff; display: block; margin-bottom: 10px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.9); letter-spacing: 1px;">VIZITATORI REALI:</span>
+                <a href="https://www.hitwebcounter.com/" target="_blank">
+                    <img src="https://hitwebcounter.com/counter/counter.php?page=21476386&style=0001&nbdigits=5&type=page&initCount=0" title="Free Tools" alt="Free Tools" border="0" style="max-width: 100%; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);" />
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main style="flex: 1;">
+        </main>
+</div>
+
+<footer class="main-footer">
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script>
+    /* -------------------------------------------
+       FUNCȚIONALITATE MENIU HAMBURGER
+    ------------------------------------------- */
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+    }
+
+    /* -------------------------------------------
+       SCRIPTURI PENTRU CEAS SI VIZITATORI
+    ------------------------------------------- */
+    function updateClock() {
+        const now = new Date();
+        let h = now.getHours().toString().padStart(2, '0');
+        let m = now.getMinutes().toString().padStart(2, '0');
+        let s = now.getSeconds().toString().padStart(2, '0');
+        document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+        
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('ro-RO', options);
+        document.getElementById('date').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+    }
+
+    const STORAGE_KEY = 'site_constantin_total_time';
+    let totalSeconds = 0;
+    
+    if (localStorage.getItem(STORAGE_KEY)) {
+        totalSeconds = parseInt(localStorage.getItem(STORAGE_KEY));
+    } else {
+        totalSeconds = 49374;
+    }
+
+    function updateTotalTime() {
+        totalSeconds++;
+        localStorage.setItem(STORAGE_KEY, totalSeconds);
+        const ore = Math.floor(totalSeconds / 3600);
+        const minute = Math.floor((totalSeconds % 3600) / 60);
+        const secunde = totalSeconds % 60;
+        document.getElementById('timp-online').textContent = `${ore}h ${minute}m ${secunde}s`;
+    }
+
+    let vizitatoriCurenti = 128;
+    function simulateVisitors() {
+        if (Math.random() > 0.7) {
+            vizitatoriCurenti++;
+            const el = document.getElementById('vizitatori');
+            el.textContent = vizitatoriCurenti;
+            el.classList.remove('fade-update');
+            void el.offsetWidth;
+            el.classList.add('fade-update');
+        }
+    }
+
+    let mesajeCurente = 4;
+    setTimeout(() => {
+        mesajeCurente++;
+        const el = document.getElementById('mesaje');
+        el.textContent = mesajeCurente;
+        el.classList.add('fade-update');
+    }, 15000);
+
+    setInterval(() => {
+        updateClock();
+        updateTotalTime();
+    }, 1000);
+    setInterval(simulateVisitors, 3000);
+
+    updateClock();
+    updateTotalTime();
+</script>
+</body>
+</html>
