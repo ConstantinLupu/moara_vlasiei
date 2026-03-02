@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jurnal de Amintiri</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-4.0.3') no-repeat center center fixed; 
+            background-size: cover; 
+            color: white; 
+        }
+        
+        /* --- MENIU NAVIGARE UNIFORMIZAT --- */
+        .navbar { 
+            background-color: rgba(144, 164, 174, 0.9); 
+            padding: 10px 20px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .nav-links a { 
+            color: #333; 
+            text-decoration: none; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            font-size: 0.9rem; 
+            padding: 8px 15px;
+            display: inline-block; 
+            transition: 0.3s; 
+            border-radius: 4px;
+        }
+        .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+        .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+        }
+        .bar {
+            height: 3px;
+            width: 25px;
+            background-color: #333;
+            margin: 3px 0;
+            border-radius: 3px;
+            transition: 0.4s;
+        }
+
+        /* --- RESTUL STILURILOR TALE (Neschimbate) --- */
+        .container { max-width: 900px; margin: 40px auto; padding: 20px; text-align: center; }
+        
+        /* Casetă albă exact ca în poza ta */
+        .upload-box { background: rgba(255, 255, 255, 0.95); color: #333; padding: 30px; border-radius: 15px; margin-bottom: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); text-align: left;}
+        .upload-box h2 { color: #1d8cf8; margin-top: 0; text-align: center;}
+        
+        .form-row { display: flex; gap: 20px; }
+        .form-col { flex: 1; }
+        
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; background: #f9f9f9; box-sizing: border-box; font-family: inherit;}
+        
+        .btn { background: #1d8cf8; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px;}
+        .btn:hover { background: #0073e6; }
+        
+        /* Grila cu poze postate */
+        .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; text-align: left; }
+        .memory-card { background: white; color: #333; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .memory-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
+        .content { padding: 15px; }
+        .content strong { color: #1d8cf8; font-size: 1.1rem; }
+
+        /* --- ADAPTARE PENTRU TELEFON (Meniu) --- */
+        @media (max-width: 900px) { 
+            .navbar { display: block; text-align: left; padding: 15px 20px; min-height: 50px; }
+            .menu-toggle { display: flex; }
+            .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: rgba(0,0,0,0.05); border-radius: 4px; }
+            .nav-links.active { display: flex; }
+            .nav-links a { width: 100%; text-align: center; padding: 15px; margin: 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+            .nav-links a:last-child { border-bottom: none; }
+            .form-row { flex-direction: column; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+        
+        <div class="nav-links" id="nav-links">
+            <a href="index.html">Acasă</a>
+            <a href="despre.html">Despre mine</a>
+            <a href="amintiri.html" class="active">Amintiri</a>
+            <a href="prezentare.html">Prezentare</a>
+            <a href="jocuri.html">Jocuri</a>
+            <a href="poze.html">Galerie Foto</a>
+            <a href="portofoliu.html">Portofoliu</a>
+            <a href="documente.html">Documente</a>
+            <a href="experiment.html">Experiment</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html">Admin</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="upload-box">
+            <h2><i class="fas fa-camera"></i> Adaugă Amintirea Ta de Vacanță</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 20px;">Fă parte din comunitatea noastră! Încarcă o poză și povestește-ne pe scurt despre vacanța ta.</p>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <label><b>Numele tău sau Locația</b></label>
+                    <input type="text" id="name" placeholder="Ex: Mihai în Thassos">
+                </div>
+                <div class="form-col">
+                    <label><b>Alege Fotografia</b></label>
+                    <input type="file" id="photo" accept="image/*">
+                </div>
+            </div>
+            
+            <label><b>Scurtă descriere / Mesaj</b></label>
+            <textarea id="story" placeholder="Scrie mesajul tău aici..." rows="3"></textarea>
+            
+            <button class="btn" onclick="save()"><i class="fas fa-paper-plane"></i> Publică Amintirea</button>
+        </div>
+
+        <div id="grid" class="memory-grid"></div>
+    </div>
+
+    <script>
+        /* --- FUNCȚIONALITATE MENIU HAMBURGER --- */
+        const mobileMenuBtn = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+
+        if(mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
+
+        /* --- FUNCȚIONALITATE AMINTIRI (Conectată la Server) --- */
+        async function save() {
+            const name = document.getElementById('name').value;
+            const fileInput = document.getElementById('photo');
+            const file = fileInput.files[0];
+            const story = document.getElementById('story').value;
+
+            if(!file) return alert("Te rog să alegi fotografia!");
+            if(!name) return alert("Te rog să treci numele tău sau locația!");
+
+            // Împachetăm datele pentru a le trimite la server
+            const formData = new FormData();
+            formData.append('author', name);
+            formData.append('photo', file);
+            formData.append('text', story);
+
+            try {
+                // Trimitem cererea la serverul nostru Node.js
+                const response = await fetch('http://localhost:3000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if(response.ok) {
+                    alert("Amintirea ta a fost publicată cu succes!");
+                    
+                    // Curățăm câmpurile după publicare
+                    document.getElementById('name').value = '';
+                    fileInput.value = '';
+                    document.getElementById('story').value = '';
+                    
+                    // Reîncărcăm lista de amintiri fără să dăm refresh la toată pagina
+                    load();
+                } else {
+                    alert("A apărut o eroare la salvarea amintirii.");
+                }
+            } catch (err) {
+                console.error("Eroare:", err);
+                alert("Nu mă pot conecta la server! Asigură-te că ai rulat comanda 'node server.js' în terminal.");
+            }
+        }
+
+        async function load() {
+            const grid = document.getElementById('grid');
+            
+            try {
+                // Cerem datele de la server
+                const response = await fetch('http://localhost:3000/memories');
+                
+                if (!response.ok) {
+                    throw new Error("Nu am putut prelua amintirile.");
+                }
+                
+                const db = await response.json();
+                
+                if (db.length === 0) {
+                    grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: white; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px;">Nicio amintire adăugată încă. Fii tu primul!</p>';
+                    return;
+                }
+
+                // Generăm cardurile cu poze primite de pe server
+                grid.innerHTML = db.map(m => `
+                    <div class="memory-card">
+                        <img src="${m.imageUrl}" alt="Amintire">
+                        <div class="content">
+                            <strong>${m.author}</strong>
+                            <p style="font-size:0.9rem; color:#666; margin-top: 8px;">${m.text}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (err) {
+                console.error("Eroare încărcare:", err);
+                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: #ffcccc; background: rgba(200,0,0,0.6); padding: 15px; border-radius: 10px; font-weight: bold;">Serverul este oprit. Baza de date nu poate fi citită momentan.</p>';
+            }
+        }
+
+        // Încărcăm amintirile automat la deschiderea paginii
+        window.onload = load;
+    </script>
+
+</body>
+</html>
