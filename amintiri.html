@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jurnal de Amintiri</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Setări generale și Background */
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-4.0.3') no-repeat center center fixed; background-size: cover; color: #333; background-attachment: fixed; }
+        
+        /* Navbar */
+        .navbar { background-color: rgba(255, 255, 255, 0.95); padding: 10px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .nav-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .nav-links a { color: #555; text-decoration: none; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; padding: 8px 15px; display: inline-block; transition: 0.3s; border-radius: 4px; }
+        .nav-links a:hover { color: #1d8cf8; background: rgba(29, 140, 248, 0.1); transform: scale(1.05); }
+        .nav-links a.active { color: #1d8cf8; border-bottom: 2px solid #1d8cf8; border-radius: 0; }
+        .menu-toggle { display: none; flex-direction: column; cursor: pointer; position: absolute; right: 20px; top: 15px; }
+        .bar { height: 3px; width: 25px; background-color: #333; margin: 3px 0; border-radius: 3px; transition: 0.4s; }
+        
+        /* Layout Principal pe 2 coloane */
+        .main-layout { 
+            display: flex; 
+            gap: 40px; 
+            max-width: 1300px; 
+            margin: 40px auto; 
+            padding: 0 20px; 
+            align-items: flex-start; 
+        }
+        
+        .left-sidebar { 
+            width: 350px; 
+            flex-shrink: 0; 
+            position: sticky; 
+            top: 80px; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .feed-content { 
+            flex-grow: 1; 
+            max-width: 680px; 
+            margin: 0 auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+
+        /* Zona de Upload (Creare Postare) & Caseta Mesaj Admin */
+        .upload-box { background: rgba(255, 255, 255, 0.98); padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative;}
+        .upload-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #e5e5e5; padding-bottom: 15px; }
+        .upload-header h2 { margin: 0; font-size: 1.3rem; color: #1c1e21; display: flex; align-items: center; gap: 8px;}
+        .upload-welcome { font-size: 0.95rem; color: #666; margin-bottom: 20px; line-height: 1.4; }
+        
+        .form-col { margin-bottom: 15px; }
+        .form-col label { font-size: 0.9rem; color: #65676b; font-weight: 600; margin-bottom: 5px; display: block;}
+        input[type="text"], textarea { width: 100%; padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; border: 1px solid #ccd0d5; background: #f0f2f5; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; transition: 0.3s;}
+        textarea { resize: none; }
+        input[type="text"]:focus, textarea:focus { border-color: #1877f2; outline: none; background: #fff;}
+        input[type="file"] { background: transparent; border: none; padding: 5px 0; width: 100%; font-size: 0.9rem; }
+        
+        .btn { background: #1877f2; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; margin-top: 10px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(24, 119, 242, 0.3); }
+        .btn:hover { background: #166fe5; transform: translateY(-1px); }
+
+        /* Notificare succes mesaj trimis admin */
+        .success-msg { color: #28a745; font-size: 0.9rem; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
+
+        /* CARD AMINTIRE (Design tip Social Media) */
+        .memory-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; flex-direction: column; position: relative;}
+        
+        /* Card Header */
+        .card-header { display: flex; align-items: center; padding: 15px; }
+        .card-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 1px solid #eee;}
+        .card-author-info { flex-grow: 1; }
+        .card-author-name { font-weight: 600; color: #050505; font-size: 1rem; }
+        .card-time { font-size: 0.8rem; color: #65676b; margin-top: 2px;}
+        
+        /* Opțiuni Card */
+        .card-options { background: none; border: none; color: #65676b; cursor: pointer; padding: 5px; font-size: 1.2rem; border-radius: 50%; transition: 0.2s;}
+        .card-options:hover { background: #f0f2f5; }
+        .card-options.delete { color: #dc3545; }
+
+        /* Card Text și Imagine */
+        .card-text { padding: 0 15px 15px 15px; color: #050505; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word;}
+        .memory-card img.post-img { width: 100%; max-height: 500px; object-fit: cover; display: block; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+        
+        /* Secțiunea Statistici */
+        .stats-bar { display: flex; justify-content: space-between; padding: 10px 15px; color: #65676b; font-size: 0.9rem; border-bottom: 1px solid #ced0d4; }
+        .stats-likes { display: flex; align-items: center; gap: 5px; }
+        .like-icon-circle { background: #1877f2; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; justify-content: center; align-items: center; font-size: 10px; }
+        .comments-count:hover { text-decoration: underline; cursor: pointer; }
+
+        /* Bara de Interacțiuni */
+        .interaction-bar { display: flex; justify-content: space-between; padding: 4px 15px; }
+        .action-btn { flex: 1; background: transparent; border: none; cursor: pointer; font-size: 0.95rem; color: #65676b; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; border-radius: 5px; transition: 0.2s; }
+        .action-btn:hover { background: #f0f2f5; }
+        .action-btn.active-like { color: #1877f2; }
+        .action-btn i { font-size: 1.2rem; }
+        
+        /* Secțiune Comentarii */
+        .comments-section { padding: 10px 15px 15px 15px; border-top: 1px solid #ced0d4; background: white; transition: 0.3s; }
+        .comments-list { max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
+        .comments-list::-webkit-scrollbar { width: 6px; }
+        .comments-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        
+        .comment-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start;}
+        .comment-avatar { width: 32px; height: 32px; border-radius: 50%; }
+        .comment-bubble { background: #f0f2f5; padding: 8px 12px; border-radius: 18px; color: #050505; font-size: 0.9rem; max-width: calc(100% - 50px); word-break: break-word;}
+        .comment-bubble strong { display: block; font-size: 0.85rem; color: #050505; font-weight: 600; margin-bottom: 2px;}
+
+        /* Input Comentariu */
+        .comment-input-area { display: flex; align-items: center; gap: 8px; }
+        .comment-input-area .comment-avatar { width: 32px; height: 32px; flex-shrink: 0;}
+        .comment-input-wrapper { display: flex; flex-grow: 1; align-items: center; background: #f0f2f5; border-radius: 20px; padding: 0 15px; border: 1px solid transparent; transition: 0.3s;}
+        .comment-input-wrapper:focus-within { border-color: #1877f2; }
+        .comment-input-wrapper input { margin: 0; padding: 10px 0; border: none; background: transparent; flex-grow: 1; border-radius: 0; outline: none; font-size: 0.95rem; }
+        
+        /* Bara de Emoticoane */
+        .emoji-quick-bar { display: flex; gap: 8px; align-items: center; margin-right: 5px; cursor: pointer; font-size: 1.1rem; }
+        .emoji-quick-bar span { transition: transform 0.2s; }
+        .emoji-quick-bar span:hover { transform: scale(1.3); }
+        .send-comment-btn { background: none; border: none; color: #1877f2; font-size: 1.2rem; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
+        .send-comment-btn:hover { transform: scale(1.1); }
+
+        /* Pop-up Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .modal-box { background: white; color: #333; padding: 35px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popIn 0.3s ease-out;}
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-box h3 { margin-top: 0; color: #1877f2; font-size: 1.6rem; }
+        .modal-box p { color: #666; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
+        .modal-box input { width: 100%; padding: 15px; border: 2px solid #e1e1e1; border-radius: 10px; margin-bottom: 15px; text-align: center; font-size: 1.1rem; font-weight: bold;}
+        .modal-box input:focus { border-color: #1877f2; outline: none; }
+
+        /* Responsivitate */
+        @media (max-width: 950px) {
+            .main-layout { flex-direction: column; align-items: stretch; margin-top: 20px; }
+            .left-sidebar { width: 100%; position: static; }
+            .feed-content { max-width: 100%; }
+            .navbar { padding: 15px 20px; justify-content: space-between;}
+            .menu-toggle { display: flex; position: static; }
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 50px; left: 0; width: 100%; background: rgba(255,255,255,0.95); box-shadow: 0 5px 10px rgba(0,0,0,0.1); padding: 10px 0;}
+            .nav-links.active { display: flex; }
+            .nav-links a { text-align: center; border-bottom: 1px solid #eee; padding: 15px; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>👋 Bun venit!</h3>
+            <p>Pentru a putea posta amintiri, lăsa aprecieri și comentarii, te rugăm să ne spui cum te numești.</p>
+            <input type="text" id="visitor-name-input" placeholder="Ex: Mihai Popescu">
+            <button id="save-name-btn" class="btn">Continuă <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div style="font-weight: bold; color: #1877f2; font-size: 1.2rem;"><i class="fas fa-book-open"></i> Jurnal</div>
+        <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </div>
+        <div class="nav-links" id="nav-links">
+            <a href="index.html">Acasă</a>
+            <a href="despre.html">Despre mine</a>
+            <a href="amintiri.html" class="active">Amintiri</a>
+            <a href="prezentare.html">Prezentare</a>
+            <a href="jocuri.html">Jocuri</a>
+            <a href="poze.html">Galerie Foto</a>
+            <a href="portofoliu.html">Portofoliu</a>
+            <a href="documente.html">Documente</a>
+            <a href="experiment.html">Experiment</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html">Admin</a>
+        </div>
+    </nav>
+
+    <div class="main-layout">
+        
+        <div class="left-sidebar">
+            
+            <div class="upload-box">
+                <div class="upload-header">
+                    <h2 style="margin: 0; font-size: 1.3rem; color: #1c1e21; display: flex; align-items: center; gap: 8px;"><i class="fas fa-edit" style="color: #1877f2; font-size: 1.5rem;"></i> Postare Nouă</h2>
+                </div>
+                
+                <div class="upload-welcome">
+                    Salut, <span id="display-user-name" style="font-weight: bold; color: #1877f2;">Mihai</span>! Încarcă o poză și povestește-ne pe scurt.
+                </div>
+                
+                <div class="form-col">
+                    <label>Locația (Opțional)</label>
+                    <input type="text" id="location" placeholder="Ex: Thassos, Grecia">
+                </div>
+
+                <div class="form-col">
+                    <label>Alege Fotografia</label>
+                    <input type="file" id="photo" accept="image/*">
+                </div>
+                
+                <div class="form-col">
+                    <label>Scurtă descriere / Mesaj</label>
+                    <textarea id="story" placeholder="La ce te gândești?" rows="3"></textarea>
+                </div>
+                
+                <button id="publishBtn" class="btn"><i class="fas fa-paper-plane"></i> Publică Amintirea</button>
+            </div>
+
+            <div class="upload-box" id="admin-message-box">
+                <div class="upload-header">
+                    <h2 style="margin: 0; font-size: 1.1rem; color: #1c1e21; display: flex; align-items: center; gap: 8px;"><i class="fas fa-user-shield" style="color: #dc3545; font-size: 1.3rem;"></i> Mesaj către Admin</h2>
+                </div>
+                
+                <div class="upload-welcome" style="margin-bottom: 10px; font-size: 0.85rem;">
+                    Dacă dorești să fie ștearsă o poză sau ai o sugestie, scrie un mesaj aici. Mesajul tău va ajunge direct în panoul Administratorului.
+                </div>
+
+                <textarea id="admin-message-input" placeholder="Scrie mesajul tău privat..." rows="2" style="border-radius: 8px; border-color: #dc3545;"></textarea>
+                <button id="sendAdminMsgBtn" class="btn" style="background: #dc3545; padding: 10px;"><i class="fas fa-envelope"></i> Trimite Mesaj</button>
+                <div id="admin-success-msg" class="success-msg">✅ Mesajul a fost trimis către Administrator!</div>
+            </div>
+
+        </div>
+
+        <div class="feed-content">
+            <div id="grid" style="display: flex; flex-direction: column; gap: 20px;">
+                </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcRKJjZF5lIUwYwc_ty_0edMJs3jv60_A",
+            authDomain: "jurnal-amintiri.firebaseapp.com",
+            projectId: "jurnal-amintiri",
+            storageBucket: "jurnal-amintiri.firebasestorage.app",
+            messagingSenderId: "417791897007",
+            appId: "1:417791897007:web:03789196260a2a3832135a",
+            measurementId: "G-245ZTMM3K6",
+            databaseURL: "https://jurnal-amintiri-default-rtdb.firebaseio.com" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const memoriesRef = ref(db, 'memories'); 
+        const adminMessagesRef = ref(db, 'admin_messages'); // Baza de date pentru mesaje admin
+
+        const isAdmin = sessionStorage.getItem("sunt_admin") === "DA";
+        let currentUserName = localStorage.getItem("visitor_name") || "";
+
+        window.openCommentSections = new Set();
+
+        function getAvatarUrl(name) {
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&rounded=true&bold=true`;
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!currentUserName && !isAdmin) { 
+                document.getElementById("welcome-modal").style.display = "flex";
+                document.getElementById("visitor-name-input").focus();
+            } else {
+                document.getElementById("display-user-name").innerText = currentUserName || "Admin";
+            }
+
+            // Dacă e Admin, ascundem complet caseta de a trimite mesaj lui însuși, pentru că oricum are panoul său separat
+            if (isAdmin) {
+                document.getElementById('admin-message-box').style.display = 'none';
+            }
+        });
+
+        function saveVisitorName() {
+            const nameInput = document.getElementById("visitor-name-input").value.trim();
+            if (nameInput) {
+                localStorage.setItem("visitor_name", nameInput);
+                currentUserName = nameInput;
+                document.getElementById("welcome-modal").style.display = "none";
+                document.getElementById("display-user-name").innerText = currentUserName;
+                window.location.reload();
+            } else {
+                alert("Te rugăm să introduci un nume valid!");
+            }
+        }
+
+        document.getElementById("save-name-btn").addEventListener("click", saveVisitorName);
+        document.getElementById("visitor-name-input").addEventListener("keypress", (e) => {
+            if(e.key === "Enter") saveVisitorName();
+        });
+
+        const mobileMenuBtn = document.getElementById('mobile-menu');
+        if(mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                document.getElementById('nav-links').classList.toggle('active');
+            });
+        }
+
+        // POSTARE IMAGINE NOUĂ
+        document.getElementById('publishBtn').addEventListener('click', () => {
+            let authorName = currentUserName || (isAdmin ? "Administrator" : "Vizitator");
+            const location = document.getElementById('location').value.trim();
+            const file = document.getElementById('photo').files[0];
+            const story = document.getElementById('story').value;
+
+            if(!file) return alert("Te rog să alegi fotografia!");
+            
+            if(location !== "") {
+                authorName += " - " + location;
+            }
+
+            const btn = document.getElementById('publishBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Se publică...';
+            btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; 
+                    const scaleSize = MAX_WIDTH / img.width;
+                    
+                    if (img.width > MAX_WIDTH) {
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                    } else {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    }
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+                    push(memoriesRef, {
+                        author: authorName,
+                        image: compressedBase64,
+                        text: story,
+                        timestamp: Date.now(),
+                        likes: 0
+                    }).then(() => {
+                        document.getElementById('location').value = '';
+                        document.getElementById('photo').value = '';
+                        document.getElementById('story').value = '';
+                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publică Amintirea';
+                        btn.disabled = false;
+                        
+                        if(window.innerWidth < 900) {
+                            window.scrollBy({ top: 400, behavior: 'smooth' });
+                        }
+                    });
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // TRIMITE MESAJ PRIVAT CĂTRE ADMIN (Va apărea direct în panoul Adminului)
+        const sendAdminMsgBtn = document.getElementById('sendAdminMsgBtn');
+        if(sendAdminMsgBtn) {
+            sendAdminMsgBtn.addEventListener('click', () => {
+                const msgInput = document.getElementById('admin-message-input');
+                const msgText = msgInput.value.trim();
+                
+                if(!msgText) return;
+
+                const author = currentUserName || "Vizitator";
+                
+                push(adminMessagesRef, {
+                    author: author,
+                    text: msgText,
+                    timestamp: Date.now()
+                }).then(() => {
+                    msgInput.value = '';
+                    const successMsg = document.getElementById('admin-success-msg');
+                    successMsg.style.display = 'block';
+                    setTimeout(() => {
+                        successMsg.style.display = 'none';
+                    }, 4000);
+                });
+            });
+        }
+
+
+        window.deleteMemory = function(id) {
+            if(confirm("Ștergi definitiv această postare?")) {
+                remove(ref(db, 'memories/' + id));
+            }
+        };
+
+        window.likePost = function(id) {
+            const postRef = ref(db, 'memories/' + id);
+            get(postRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const currentLikes = snapshot.val().likes || 0;
+                    update(postRef, { likes: currentLikes + 1 });
+                    
+                    const btn = document.getElementById('like-btn-' + id);
+                    if(btn) {
+                        btn.classList.add('active-like');
+                        btn.innerHTML = '<i class="fas fa-thumbs-up"></i> Îmi place';
+                    }
+                }
+            });
+        };
+
+        window.sharePost = function() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Jurnal de Amintiri',
+                    text: 'Uite această amintire frumoasă!',
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Linkul paginii a fost copiat în clipboard. Îl poți trimite prietenilor!");
+            }
+        };
+
+        window.toggleComments = function(id) {
+            const section = document.getElementById('comments-section-' + id);
+            const input = document.getElementById('comment-' + id);
+            
+            if (section.style.display === 'none' || section.style.display === '') {
+                section.style.display = 'block';
+                window.openCommentSections.add(id); 
+                if(input) input.focus();
+            } else {
+                section.style.display = 'none';
+                window.openCommentSections.delete(id); 
+            }
+        };
+
+        window.addComment = function(id) {
+            const input = document.getElementById('comment-' + id);
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const myName = currentUserName || (isAdmin ? "Administrator" : "Anonim");
+            
+            push(ref(db, 'memories/' + id + '/comments'), {
+                author: myName,
+                text: text,
+                timestamp: Date.now()
+            });
+            input.value = '';
+        };
+
+        window.insertEmoji = function(id, emoji) {
+            const input = document.getElementById('comment-' + id);
+            input.value += emoji;
+            input.focus();
+        };
+
+        onValue(memoriesRef, (snapshot) => {
+            const data = snapshot.val();
+            const grid = document.getElementById('grid');
+            
+            if (!data) {
+                grid.innerHTML = '<div style="background: white; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"><h3>Nu este nicio postare momentan.</h3><p>Fii primul care adaugă o amintire!</p></div>';
+                return;
+            }
+
+            const memoriesArray = Object.keys(data).map(key => {
+                return { id: key, ...data[key] };
+            }).sort((a, b) => b.timestamp - a.timestamp);
+
+            const currentUserAvatarUrl = getAvatarUrl(currentUserName || "A");
+
+            grid.innerHTML = memoriesArray.map(m => {
+                const likes = m.likes || 0;
+                const comments = m.comments ? Object.values(m.comments) : [];
+                const avatarUrl = getAvatarUrl(m.author.split(" - ")[0]);
+                const timeString = formatTime(m.timestamp);
+                
+                const isCommentsOpen = window.openCommentSections && window.openCommentSections.has(m.id) ? 'block' : 'none';
+                
+                const commentsHTML = comments.map(c => `
+                    <div class="comment-row">
+                        <img src="${getAvatarUrl(c.author)}" class="comment-avatar">
+                        <div class="comment-bubble">
+                            <strong>${c.author}</strong>
+                            ${c.text}
+                        </div>
+                    </div>
+                `).join('');
+
+                const deleteBtnHTML = isAdmin ? 
+                    `<button class="card-options delete" onclick="deleteMemory('${m.id}')" title="Șterge"><i class="fas fa-times"></i></button>` : 
+                    `<button class="card-options"><i class="fas fa-ellipsis-h"></i></button>`;
+
+                return `
+                <div class="memory-card">
+                    <div class="card-header">
+                        <img src="${avatarUrl}" class="card-avatar">
+                        <div class="card-author-info">
+                            <div class="card-author-name">${m.author}</div>
+                            <div class="card-time">${timeString}</div>
+                        </div>
+                        ${deleteBtnHTML}
+                    </div>
+                    
+                    <div class="card-text">${m.text}</div>
+                    <img src="${m.image}" class="post-img" alt="Amintire">
+                    
+                    <div class="stats-bar">
+                        <div class="stats-likes">
+                            <div class="like-icon-circle"><i class="fas fa-thumbs-up"></i></div>
+                            ${likes}
+                        </div>
+                        <div class="comments-count" onclick="toggleComments('${m.id}')">
+                            ${comments.length} comentarii
+                        </div>
+                    </div>
+
+                    <div class="interaction-bar">
+                        <button class="action-btn" id="like-btn-${m.id}" onclick="likePost('${m.id}')">
+                            <i class="far fa-thumbs-up"></i> Îmi place
+                        </button>
+                        <button class="action-btn" onclick="toggleComments('${m.id}')">
+                            <i class="far fa-comment"></i> Comentează
+                        </button>
+                        <button class="action-btn" onclick="sharePost()">
+                            <i class="fas fa-share"></i> Distribuie
+                        </button>
+                    </div>
+
+                    <div class="comments-section" id="comments-section-${m.id}" style="display: ${isCommentsOpen};">
+                        <div class="comments-list">
+                            ${commentsHTML}
+                        </div>
+                        
+                        <div class="comment-input-area">
+                            <img src="${currentUserAvatarUrl}" class="comment-avatar">
+                            <div class="comment-input-wrapper">
+                                <input type="text" id="comment-${m.id}" placeholder="Scrie un comentariu..." onkeypress="if(event.key === 'Enter') addComment('${m.id}')">
+                                
+                                <div class="emoji-quick-bar">
+                                    <span onclick="insertEmoji('${m.id}', '❤️')">❤️</span>
+                                    <span onclick="insertEmoji('${m.id}', '😂')">😂</span>
+                                    <span onclick="insertEmoji('${m.id}', '👏')">👏</span>
+                                    <span onclick="insertEmoji('${m.id}', '🔥')">🔥</span>
+                                    <span onclick="insertEmoji('${m.id}', '✨')">✨</span>
+                                </div>
+
+                                <button class="send-comment-btn" onclick="addComment('${m.id}')">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        });
+    </script>
+</body>
+</html>
