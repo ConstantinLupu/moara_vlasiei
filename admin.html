@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Control Total</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #1e1e2f;
+            --sidebar: #1a1a2e;
+            --card: #27293d;
+            --blue: #1d8cf8;
+            --red: #fd5d93;
+            --green: #00f2c3;
+            --orange: #ff8d72;
+            --text: #ffffff;
+            --text-muted: #9a9a9a;
+        }
+
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+        /* Login */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #12121e; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: var(--card); padding: 40px; border-radius: 15px; text-align: center; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .login-box input { width: 100%; padding: 12px; margin: 20px 0; background: #1e1e2f; border: 1px solid #444; color: white; border-radius: 8px; text-align: center; font-size: 16px; }
+        #login-error { color: var(--red); font-size: 13px; margin-top: 10px; display: none; }
+        .btn-inapoi { display: inline-block; margin-top: 25px; color: var(--text-muted); text-decoration: none; font-size: 14px; transition: 0.3s ease; }
+        .btn-inapoi:hover { color: var(--blue); }
+
+        /* Dashboard */
+        #dashboard-screen { display: none; width: 100vw; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar); height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; border-right: 1px solid #333; }
+        .profile { text-align: center; padding: 30px 20px; border-bottom: 1px solid #333; }
+        .profile img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--blue); object-fit: cover; margin-bottom: 15px; }
+        .menu { flex-grow: 1; padding: 20px 0; }
+        .menu a { display: block; padding: 15px 25px; color: var(--text-muted); text-decoration: none; font-size: 15px; transition: 0.3s; }
+        .menu a i { margin-right: 15px; width: 20px; text-align: center; }
+        .menu a:hover, .menu a.active { color: white; background: rgba(255,255,255,0.05); border-left: 4px solid var(--blue); }
+
+        .btn-deconectare { margin: 20px; margin-top: auto; padding: 12px; background: #e63946; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-deconectare:hover { background: #d62828; transform: translateY(-2px); }
+
+        .main { margin-left: 260px; padding: 40px; width: calc(100% - 260px); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .btn { background: var(--blue); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn:hover { opacity: 0.9; }
+
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); padding: 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--blue); }
+        .stat-card h2 { margin: 0; font-size: 28px; }
+        .stat-card p { margin: 5px 0 0; font-size: 12px; color: var(--text-muted); }
+        .stat-card i { font-size: 35px; opacity: 0.2; }
+
+        .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 12px; margin-bottom: 20px; }
+
+        .upload-area { display: flex; gap: 10px; margin-bottom: 20px; }
+        .upload-area input[type="text"] { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1e1e2f; color: white; }
+
+        .grid-poze { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .poza-item { background: #1a1a2e; padding: 10px; border-radius: 10px; position: relative; text-align: center; }
+        .poza-item img { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; }
+        .poza-item p { margin: 8px 0 0; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ccc;}
+        .btn-del { position: absolute; top: -5px; right: -5px; background: var(--red); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <i class="fas fa-shield-alt" style="font-size: 50px; color: var(--blue); margin-bottom: 10px;"></i>
+            <h2>Panou Administrator</h2>
+            <input type="password" id="parola" placeholder="Introdu parola...">
+            <button class="btn" style="width: 100%;" onclick="verificaParola()">Autentificare</button>
+            <p id="login-error">Parolă incorectă!</p>
+            <a href="index.html" class="btn-inapoi"><i class="fas fa-arrow-left"></i> Înapoi Acasă</a>
+        </div>
+    </div>
+
+    <div id="dashboard-screen">
+        <div class="sidebar">
+            <div class="profile">
+                <img src="https://via.placeholder.com/150" alt="Avatar Admin">
+                <h3 style="margin: 0;">Constantin Lupu</h3>
+                <p style="color: var(--green); font-size: 13px; margin-top: 5px;"><i class="fas fa-circle"></i> Online</p>
+            </div>
+            
+            <div class="menu">
+                <a href="#" class="active"><i class="fas fa-chart-pie"></i> Panou Control</a>
+                <a href="poze.html"><i class="fas fa-images"></i> Administrare Poze</a>
+                <a href="amintiri.html"><i class="fas fa-envelope"></i> Pagina Amintiri</a>
+                <a href="index.html"><i class="fas fa-home"></i> Înapoi la Site</a>
+            </div>
+
+            <button class="btn-deconectare" onclick="deconectareCont()">
+                <i class="fas fa-sign-out-alt"></i> Deconectare
+            </button>
+        </div>
+
+        <div class="main">
+            <div class="header-top">
+                <div>
+                    <h1 style="margin: 0;">Prezentare Generală</h1>
+                    <p style="color: var(--text-muted); margin: 5px 0 0; font-size: 14px;">Administrează tot conținutul site-ului de aici.</p>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div><h2>1,250</h2><p>VIZITATORI</p></div>
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="stat-card" style="border-left-color: var(--red);">
+                    <div><h2>14</h2><p>MESAJE NOI</p></div>
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-card" style="border-left-color: var(--green);">
+                    <div><h2 id="total-oficiale">0</h2><p>POZELE MELE</p></div>
+                    <i class="fas fa-camera-retro"></i>
+                </div>
+                <div class="stat-card" style="border-left-color: var(--orange);">
+                    <div><h2 id="total-amintiri">0</h2><p>AMINTIRI PRIMITE</p></div>
+                    <i class="fas fa-heart"></i>
+                </div>
+            </div>
+
+            <div class="layout">
+                <div>
+                    <div class="card">
+                        <h3 style="color: var(--blue); margin-top: 0;"><i class="fas fa-upload"></i> 1. Postează în Galeria Oficială</h3>
+                        <div class="upload-area">
+                            <input type="text" id="titluPoza" placeholder="Ex: Răsărit la munte...">
+                            <input type="file" id="fileUpload" accept="image/*" style="display: none;" onchange="incarcaPoza()">
+                            <button class="btn" onclick="document.getElementById('fileUpload').click()"><i class="fas fa-file-image"></i> Alege Poza</button>
+                        </div>
+                        <div id="container-oficiale" class="grid-poze"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="color: var(--green); margin-top: 0;"><i class="fas fa-users-cog"></i> 2. Gestionează Amintirile Vizitatorilor</h3>
+                        <p style="font-size: 13px; color: var(--text-muted);">Aceste date sunt preluate live din Firebase (pagina amintiri.html).</p>
+                        <div id="container-amintiri" class="grid-poze"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <h3 style="margin-top: 0;">Informații Sistem</h3>
+                        <p style="font-size: 13px; color: var(--text-muted);">Ai activat controlul pe pagina "Amintiri". Acum, dacă te duci pe acea pagină fiind logat aici, vei vedea direct butoanele roșii de ștergere pe fiecare postare.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PAROLA_SECRETA = "admin123";
+
+        function verificaParola() {
+            const introdus = document.getElementById("parola").value;
+            if (introdus === PAROLA_SECRETA) {
+                sessionStorage.setItem("sunt_admin", "DA");
+                incarcaDashboard();
+            } else {
+                document.getElementById("login-error").style.display = "block";
+            }
+        }
+
+        function incarcaDashboard() {
+            if (sessionStorage.getItem("sunt_admin") === "DA") {
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("dashboard-screen").style.display = "flex";
+                actualizeazaPozeOficiale(); 
+            }
+        }
+
+        function deconectareCont() {
+            sessionStorage.removeItem("sunt_admin");
+            window.location.reload(); 
+        }
+
+        document.getElementById("parola").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") verificaParola();
+        });
+
+        // POZE OFICIALE (Rămân pe LocalStorage deocamdată, sau le poți muta și pe ele în Firebase mai târziu)
+        function incarcaPoza() {
+            const titlu = document.getElementById('titluPoza').value || "Poză fără titlu";
+            const fisier = document.getElementById('fileUpload').files[0];
+            if (!fisier) return;
+
+            const cititor = new FileReader();
+            cititor.onload = function(eveniment) {
+                const pozaNoua = { id: Date.now(), src: eveniment.target.result, title: titlu };
+                let bd = JSON.parse(localStorage.getItem('constantin_official')) || [];
+                bd.unshift(pozaNoua);
+                localStorage.setItem('constantin_official', JSON.stringify(bd));
+                document.getElementById('titluPoza').value = "";
+                actualizeazaPozeOficiale();
+            }
+            cititor.readAsDataURL(fisier);
+        }
+
+        function stergePozaOficiala(id_poza) {
+            let bd = JSON.parse(localStorage.getItem('constantin_official')) || [];
+            bd = bd.filter(poza => poza.id !== id_poza);
+            localStorage.setItem('constantin_official', JSON.stringify(bd));
+            actualizeazaPozeOficiale();
+        }
+
+        function actualizeazaPozeOficiale() {
+            const oficiale = JSON.parse(localStorage.getItem('constantin_official')) || [];
+            document.getElementById('total-oficiale').innerText = oficiale.length;
+            document.getElementById('container-oficiale').innerHTML = oficiale.map(poza => `
+                <div class="poza-item">
+                    <button class="btn-del" onclick="stergePozaOficiala(${poza.id})"><i class="fas fa-times"></i></button>
+                    <img src="${poza.src}">
+                    <p title="${poza.title}">${poza.title}</p>
+                </div>
+            `).join('');
+        }
+
+        window.onload = incarcaDashboard;
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcRKJjZF5lIUwYwc_ty_0edMJs3jv60_A",
+            authDomain: "jurnal-amintiri.firebaseapp.com",
+            projectId: "jurnal-amintiri",
+            storageBucket: "jurnal-amintiri.firebasestorage.app",
+            messagingSenderId: "417791897007",
+            appId: "1:417791897007:web:03789196260a2a3832135a",
+            databaseURL: "https://jurnal-amintiri-default-rtdb.firebaseio.com" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const memoriesRef = ref(db, 'memories');
+
+        window.stergePozaAmintireFirebase = function(id) {
+            if(confirm("Ștergi definitiv această amintire din Firebase?")) {
+                remove(ref(db, 'memories/' + id));
+            }
+        };
+
+        // Ascultăm schimbările din Firebase și le afișăm în containerul de Admin
+        onValue(memoriesRef, (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById('container-amintiri');
+            const counter = document.getElementById('total-amintiri');
+            
+            if (!data) {
+                container.innerHTML = '<p style="color:#666; grid-column: 1/-1;">Nu există amintiri în baza de date.</p>';
+                counter.innerText = '0';
+                return;
+            }
+
+            const memoriesArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+            counter.innerText = memoriesArray.length;
+
+            container.innerHTML = memoriesArray.map(m => `
+                <div class="poza-item">
+                    <button class="btn-del" onclick="stergePozaAmintireFirebase('${m.id}')" title="Șterge"><i class="fas fa-times"></i></button>
+                    <img src="${m.image}">
+                    <p title="${m.author}">De la: ${m.author}</p>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+</html>
