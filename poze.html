@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galerie Foto - Albumele Mele</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #1e1e2f;
+            --card-bg: #ffffff;
+            --text-dark: #333;
+            --text-muted: #666;
+            --accent: #1d8cf8;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-body);
+            color: white;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section-title { text-align: center; margin-bottom: 50px; font-size: 2.5rem; }
+
+        /* GRID ALBUME */
+        .albums-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .album-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+            color: var(--text-dark);
+        }
+
+        .album-card img { width: 100%; height: 250px; object-fit: cover; border-bottom: 1px solid #eee; }
+        .album-content { padding: 25px; text-align: center; }
+        .album-content h3 { margin: 0 0 10px 0; font-size: 1.5rem; color: #111; }
+        .album-content p { color: #555; font-size: 14px; margin-bottom: 20px; min-height: 40px; }
+
+        .btn-view {
+            background: #222;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-view:hover { background: var(--accent); transform: scale(1.05); }
+
+        /* VIZUALIZARE POZE */
+        #album-viewer {
+            display: none; /* Ascuns implicit */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #12121e;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .viewer-header {
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1200px; margin: 0 auto 40px; border-bottom: 1px solid #333; padding-bottom: 20px;
+        }
+
+        .btn-back {
+            background: var(--accent);
+            color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px; max-width: 1200px; margin: 0 auto;
+        }
+
+        .photo-item { background: #1e1e2f; border-radius: 12px; overflow: hidden; border: 1px solid #333; }
+        .photo-item img { width: 100%; height: 220px; object-fit: cover; display: block; }
+        .photo-item p { padding: 12px; margin: 0; font-size: 14px; text-align: center; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <div id="main-gallery" class="container">
+        <h1 class="section-title">Amintirile Mele</h1>
+        <div id="albums-container" class="albums-grid">
+            <p style="text-align: center; grid-column: 1/-1;">Se încarcă albumele...</p>
+        </div>
+    </div>
+
+    <div id="album-viewer">
+        <div class="viewer-header">
+            <h2 id="current-album-title" style="margin:0; color: var(--accent);">Nume Album</h2>
+            <button class="btn-back" onclick="closeAlbum()"><i class="fas fa-times"></i> Închide Albumul</button>
+        </div>
+        <div id="photos-container" class="photos-grid"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcRKJjZF5lIUwYwc_ty_0edMJs3jv60_A",
+            authDomain: "jurnal-amintiri.firebaseapp.com",
+            projectId: "jurnal-amintiri",
+            storageBucket: "jurnal-amintiri.firebasestorage.app",
+            messagingSenderId: "417791897007",
+            appId: "1:417791897007:web:03789196260a2a3832135a",
+            databaseURL: "https://jurnal-amintiri-default-rtdb.firebaseio.com" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- FUNCȚIA DE DESCHIDERE (LEGATĂ DE WINDOW) ---
+        window.openAlbum = function(albumId, albumName) {
+            console.log("Se deschide albumul:", albumId);
+            const viewer = document.getElementById('album-viewer');
+            const main = document.getElementById('main-gallery');
+            const title = document.getElementById('current-album-title');
+            const photosCont = document.getElementById('photos-container');
+
+            title.innerText = albumName;
+            photosCont.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Se încarcă pozele...</p>';
+            
+            // Arătăm ecranul de album
+            viewer.style.display = 'block';
+            main.style.display = 'none';
+            window.scrollTo(0,0);
+
+            // Citim pozele din acel album specific
+            const photosRef = ref(db, `custom_albums/${albumId}/photos`);
+            onValue(photosRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    photosCont.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Acest album nu are poze încă.</p>';
+                    return;
+                }
+                const pArray = Object.keys(data).map(k => data[k]).sort((a,b) => b.timestamp - a.timestamp);
+                photosCont.innerHTML = pArray.map(p => `
+                    <div class="photo-item">
+                        <img src="${p.src}">
+                        <p>${p.title}</p>
+                    </div>
+                `).join('');
+            });
+        };
+
+        // --- FUNCȚIA DE ÎNCHIDERE ---
+        window.closeAlbum = function() {
+            document.getElementById('album-viewer').style.display = 'none';
+            document.getElementById('main-gallery').style.display = 'block';
+        };
+
+        // --- ÎNCĂRCARE ALBUME PE PAGINA PRINCIPALĂ ---
+        const albumsRef = ref(db, 'custom_albums');
+        onValue(albumsRef, (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById('albums-container');
+            
+            if (!data) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Nu există albume. Creează unul din Admin!</p>';
+                return;
+            }
+
+            const albumsArray = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a,b) => b.timestamp - a.timestamp);
+            
+            container.innerHTML = albumsArray.map(album => `
+                <div class="album-card">
+                    <img src="${album.cover || 'https://via.placeholder.com/400x250?text=Fara+Imagine'}" alt="${album.name}">
+                    <div class="album-content">
+                        <h3>${album.name}</h3>
+                        <p>${album.description || 'Amintiri deosebite din călătoriile noastre.'}</p>
+                        <button class="btn-view" onclick="openAlbum('${album.id}', '${album.name.replace(/'/g, "\\'")}')">
+                            Vezi Albumul <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+</html>
