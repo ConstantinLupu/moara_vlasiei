@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prezentare Moara Vlăsiei - Constantin Lupu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0; padding: 0;
+        font-family: 'Lato', sans-serif;
+        background-image: url('Imagini/Deshboard/avif 1.avif');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    header { background-color: rgba(51, 51, 51, 0.9); color: white; padding-top: 60px; padding-bottom: 40px; text-align: center; position: relative; }
+    .profile-avatar { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid white; position: absolute; top: -75px; left: 50%; transform: translateX(-50%); box-shadow: 0 4px 10px rgba(0,0,0,0.2); background-color: #ddd; }
+    .header-spacer { margin-top: 80px; position: relative; }
+    h1 { font-family: 'Lato', sans-serif; font-size: 3rem; margin: 10px 0 5px 0; font-weight: 400; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+    .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; }
+
+    .navbar { background-color: rgba(144, 164, 174, 0.9); padding: 10px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; display: flex; justify-content: center; align-items: center; }
+    .nav-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+    .nav-links a { color: #333; text-decoration: none; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; padding: 8px 15px; display: inline-block; transition: 0.3s; border-radius: 4px; }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+    .menu-toggle { display: none; flex-direction: column; cursor: pointer; position: absolute; right: 20px; top: 15px; }
+    .bar { height: 3px; width: 25px; background-color: #333; margin: 3px 0; border-radius: 3px; transition: 0.4s; }
+
+    .layout-wrapper { display: flex; justify-content: center; align-items: flex-start; max-width: 1400px; margin: 30px auto 40px auto; width: 100%; padding: 0 20px; flex: 1; }
+    .main-content { flex: 1; width: 100%; background-color: #ffffff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; height: 700px; }
+
+    .gallery-header { background-color: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #ddd; display: flex; align-items: center; }
+    .gallery-header h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin: 0; font-weight: 700; color: #222; }
+    .profile-mini { width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; border: 2px solid #00bcd4; object-fit: cover; }
+
+    .showcase-container { display: flex; flex: 1; overflow: hidden; }
+    .display-area { flex: 1; background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; transition: background-image 0.5s ease-in-out; background-color: #e0e0e0; }
+    .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0) 20%, rgba(0,0,0,0.85) 100%); z-index: 1; pointer-events: none; }
+    
+    .text-content { position: absolute; bottom: 30px; left: 30px; max-width: 80%; max-height: 40vh; overflow-y: auto; z-index: 2; padding-right: 20px; }
+    .text-content::-webkit-scrollbar { width: 5px; }
+    .text-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 5px; }
+    .text-content h3 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-top: 0; margin-bottom: 10px; color: #fff; text-shadow: 2px 2px 5px rgba(0,0,0,0.9); }
+    .text-content p { font-size: 1.05rem; color: #f8f8f8; padding: 0; padding-left: 15px; border-left: 3px solid #00bcd4; margin: 0; line-height: 1.5; text-shadow: 1px 1px 4px rgba(0,0,0,0.95); white-space: pre-wrap; }
+
+    .gallery-sidebar { width: 280px; background-color: #fcfcfc; display: flex; flex-direction: column; border-left: 1px solid #eee; }
+    .thumbnail-list { flex: 1; overflow-y: auto; padding: 15px; }
+    .thumbnail-list::-webkit-scrollbar { width: 6px; }
+    .thumbnail-list::-webkit-scrollbar-track { background: #f1f1f1; }
+    .thumbnail-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+    .thumbnail-card { cursor: pointer; margin-bottom: 15px; transition: transform 0.2s, opacity 0.2s; opacity: 0.6; background: #fff; padding: 5px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .thumbnail-card:hover, .thumbnail-card.active { opacity: 1; transform: scale(1.03); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .thumbnail-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 6px; border: 2px solid transparent; display: block; }
+    .thumbnail-card.active img { border-color: #00bcd4; }
+    .thumb-title { font-size: 0.85rem; margin-top: 5px; color: #444; text-align: center; font-weight: bold; }
+
+    .main-footer { background-color: rgba(34, 34, 34, 0.9); color: #bbb; text-align: center; padding: 20px; font-size: 0.9rem; margin-top: auto; }
+    .main-footer span { color: #fff; font-weight: bold; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    .animate-title { animation: fadeIn 0.8s ease forwards; }
+    .animate-desc { animation: slideIn 0.8s ease forwards; }
+
+    @media (max-width: 1024px) {
+        .layout-wrapper { flex-direction: column; }
+        .main-content { height: auto; min-height: 600px; width: 100%; }
+        .showcase-container { flex-direction: column; }
+        .gallery-sidebar { width: 100%; height: auto; flex: none; border-left: none; border-top: 1px solid #ddd; }
+        .thumbnail-list { display: flex; flex-direction: row; overflow-x: auto; padding: 10px; gap: 10px; }
+        .thumbnail-card { width: 140px; flex: none; margin-bottom: 0; }
+        .display-area { min-height: 350px; }
+    }
+
+    @media (max-width: 900px) {
+        h1 { font-size: 2rem; } .subtitle { font-size: 1rem; }
+        .navbar { display: block; text-align: left; padding: 15px 20px; min-height: 50px; }
+        .menu-toggle { display: flex; }
+        .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: rgba(0,0,0,0.05); border-radius: 4px; }
+        .nav-links.active { display: flex; }
+        .nav-links a { width: 100%; text-align: center; padding: 15px; margin: 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .nav-links a:last-child { border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header-spacer">
+    <header>
+        <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Avatar" onerror="this.src='https://via.placeholder.com/150'">
+        <h1>Constantin Lupu</h1>
+        <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="amintiri.html">Amintiri</a>
+        <a href="prezentare.html" class="active">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="portofoliu.html">Portofoliu</a>
+        <a href="documente.html">Documente</a>
+        <a href="experiment.html">Experiment</a>
+        <a href="contact.html">Contact</a>
+        <a href="admin.html">Admin</a>
+    </div>
+</nav>
+
+<div class="layout-wrapper">
+    <main class="main-content">
+        <div class="gallery-header">
+            <img src="Imagini/jpg 0.0.jpg" class="profile-mini" alt="Profile" onerror="this.src='https://via.placeholder.com/45'">
+            <h2>Galerie Moara Vlăsiei</h2>
+        </div>
+
+        <div class="showcase-container">
+            <div class="display-area" id="main-bg">
+                <div class="overlay"></div>
+                <div class="text-content">
+                    <h3 id="main-title" class="animate-title">Se încarcă...</h3>
+                    <p id="main-desc" class="animate-desc">Așteptăm datele din baza de date.</p>
+                </div>
+            </div>
+
+            <div class="gallery-sidebar">
+                <div class="thumbnail-list" id="firebase-thumbnails">
+                    <p style="text-align:center; margin-top: 20px; font-size:0.9rem;">Se încarcă galeria...</p>
+                </div> 
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer class="main-footer">
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Meniu Mobile
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+    if(mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => navLinks.classList.toggle('active'));
+    }
+
+    // Configurare Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyDcRKJjZF5lIUwYwc_ty_0edMJs3jv60_A",
+        authDomain: "jurnal-amintiri.firebaseapp.com",
+        projectId: "jurnal-amintiri",
+        storageBucket: "jurnal-amintiri.firebasestorage.app",
+        messagingSenderId: "417791897007",
+        appId: "1:417791897007:web:03789196260a2a3832135a",
+        databaseURL: "https://jurnal-amintiri-default-rtdb.firebaseio.com" 
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const thumbnailList = document.getElementById('firebase-thumbnails');
+    const displayArea = document.getElementById('main-bg');
+    const mainTitle = document.getElementById('main-title');
+    const mainDesc = document.getElementById('main-desc');
+
+    let pozeAlbumCurent = []; // Variabilă globală pentru a salva tot conținutul
+
+    // Funcția care face update la ecran
+    function updateGallery(card, imgPath, titleText, descText) {
+        // Schimbă poza de fundal
+        displayArea.style.backgroundImage = `url('${imgPath}')`;
+
+        // Eliminăm clasele de animație pentru a le reseta
+        mainTitle.classList.remove('animate-title');
+        mainDesc.classList.remove('animate-desc');
+
+        // Modificăm textul propriu-zis
+        mainTitle.innerText = titleText || 'Fără titlu';
+        mainDesc.innerText = descText || '';
+
+        // Refolosim un mic truc (timeout) pentru a declanșa din nou animația CSS
+        setTimeout(() => {
+            mainTitle.classList.add('animate-title');
+            mainDesc.classList.add('animate-desc');
+        }, 10);
+
+        // Actualizăm starea butoanelor laterale
+        const allThumbs = document.querySelectorAll('.thumbnail-card');
+        allThumbs.forEach(t => t.classList.remove('active'));
+        if(card) card.classList.add('active');
+
+        // Scroll automat pentru varianta de telefon
+        if (window.innerWidth <= 1024 && card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }
+
+    // Preluăm pozele din Firebase
+    onValue(ref(db, 'moara_vlasiei_album'), (snapshot) => {
+        const data = snapshot.val();
+        
+        if (!data) {
+            thumbnailList.innerHTML = "<p style='text-align:center; padding: 20px; font-weight:bold;'>Momentan nu sunt adăugate poze.</p>";
+            mainTitle.innerText = "Galerie Goală";
+            mainDesc.innerText = "Așteptăm ca administratorul să urce primele fotografii.";
+            displayArea.style.backgroundImage = "none";
+            return;
+        }
+
+        // Punem datele în Array și le sortăm
+        pozeAlbumCurent = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a,b) => b.timestamp - a.timestamp);
+
+        // Afișăm în HTML lista din dreapta
+        thumbnailList.innerHTML = pozeAlbumCurent.map((poza, index) => `
+            <div class="thumbnail-card ${index === 0 ? 'active' : ''}" data-id="${poza.id}">
+                <img src="${poza.src}" alt="${poza.title}">
+                <div class="thumb-title">${poza.title || 'Moara Vlăsiei'}</div>
+            </div>
+        `).join('');
+
+        // Punem funcția de click pe fiecare thumbnail generat
+        const newThumbnails = document.querySelectorAll('.thumbnail-card');
+        newThumbnails.forEach(card => {
+            card.addEventListener('click', function() {
+                const currentId = this.getAttribute('data-id');
+                const pozaGasita = pozeAlbumCurent.find(p => p.id === currentId); // Căutăm poza exactă!
+                
+                if(pozaGasita) {
+                    updateGallery(
+                        this,
+                        pozaGasita.src,
+                        pozaGasita.title,
+                        pozaGasita.desc
+                    );
+                }
+            });
+        });
+
+        // La final, afișăm automat prima poză când intră utilizatorul pe pagină
+        if(pozeAlbumCurent.length > 0) {
+            updateGallery(
+                newThumbnails[0], 
+                pozeAlbumCurent[0].src, 
+                pozeAlbumCurent[0].title, 
+                pozeAlbumCurent[0].desc
+            );
+        }
+    });
+
+</script>
+</body>
+</html>
