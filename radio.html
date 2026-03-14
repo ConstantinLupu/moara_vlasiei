@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio - Constantin Lupu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- STILURI DE BAZA --- */
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Lato', sans-serif;
+            color: #fff;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- FUNDAL DINAMIC --- */
+        #dynamic-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('Imagini/Deshboard/avif 1.avif'); 
+            background-size: cover; background-position: center;
+            z-index: -2; transition: background-image 1.5s ease-in-out;
+        }
+
+        #bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 15, 26, 0.7); z-index: -1;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background-color: rgba(30, 30, 47, 0.85);
+            padding-top: 60px; padding-bottom: 40px; text-align: center; position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        
+        .profile-avatar {
+            width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid white;
+            position: absolute; top: -75px; left: 50%; transform: translateX(-50%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        
+        .header-spacer { margin-top: 80px; position: relative; }
+        h1 { font-family: 'Lato', sans-serif; font-size: 3rem; margin: 10px 0 5px 0; font-weight: 400; text-shadow: 2px 2px 5px rgba(0,0,0,0.8); }
+        .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; }
+
+        /* --- MENIU NAVIGARE --- */
+        .navbar { 
+            background-color: rgba(144, 164, 174, 0.95); padding: 10px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+            position: sticky; top: 0; z-index: 100; display: flex; justify-content: center; align-items: center;
+        }
+        .nav-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .nav-links a { color: #222; text-decoration: none; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; padding: 8px 15px; transition: 0.3s; border-radius: 4px; }
+        .nav-links a:hover { color: #fff; background: rgba(0,0,0,0.3); transform: scale(1.05); }
+        .nav-links a.active { color: #fff; background: rgba(0,0,0,0.5); }
+        .menu-toggle { display: none; flex-direction: column; cursor: pointer; position: absolute; right: 20px; top: 15px; }
+        .bar { height: 3px; width: 25px; background-color: #222; margin: 3px 0; border-radius: 3px; transition: 0.4s; }
+
+        /* --- INTERFAȚA RADIO (Glassmorphism) --- */
+        .radio-container {
+            max-width: 900px; margin: 50px auto; padding: 40px;
+            background: rgba(25, 25, 35, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7); flex: 1; display: flex; flex-direction: column;
+        }
+
+        .radio-header { margin-bottom: 25px; }
+        .radio-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; margin: 0 0 10px 0; color: #fff; }
+        .radio-desc { font-size: 1.1rem; color: #bbb; max-width: 500px; margin: 0 auto; }
+
+        /* --- BARA DE CĂUTARE --- */
+        .search-container {
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;
+            width: 100%; max-width: 500px; margin-left: auto; margin-right: auto;
+        }
+        .search-container input {
+            flex: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.4); color: white; font-size: 1rem; outline: none; transition: 0.3s;
+            font-family: 'Lato', sans-serif;
+        }
+        .search-container input:focus { border-color: #1d8cf8; background: rgba(0,0,0,0.6); }
+        .search-container button {
+            background: #1d8cf8; color: white; border: none; border-radius: 50%;
+            width: 48px; height: 48px; cursor: pointer; transition: 0.3s; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(29, 140, 248, 0.3);
+        }
+        .search-container button:hover { transform: scale(1.05); background: #007bff; }
+
+        /* --- PANOU STATUS & DJ MIXER --- */
+        .dj-panel {
+            background: rgba(0, 0, 0, 0.6); border-radius: 15px; padding: 25px; margin-bottom: 30px;
+            border-top: 3px solid #1d8cf8; transition: border-color 0.4s;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        /* Status Player */
+        .player-status { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+        .status-info { text-align: left; flex: 1; }
+        .status-label { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+        .status-station { font-size: 1.4rem; font-weight: bold; color: #fff; margin: 0; word-break: break-word; }
+
+        /* Egalizator Animat */
+        .equalizer { display: none; align-items: flex-end; gap: 4px; height: 35px; }
+        .equalizer.playing { display: flex; }
+        .eq-bar { width: 6px; background: #1d8cf8; border-radius: 3px 3px 0 0; animation: eq-bounce 1s infinite ease-in-out alternate; }
+        .eq-bar:nth-child(1) { height: 10px; animation-delay: 0.1s; }
+        .eq-bar:nth-child(2) { height: 25px; animation-delay: 0.3s; }
+        .eq-bar:nth-child(3) { height: 15px; animation-delay: 0.2s; }
+        .eq-bar:nth-child(4) { height: 30px; animation-delay: 0.4s; }
+        .eq-bar:nth-child(5) { height: 20px; animation-delay: 0.1s; }
+        @keyframes eq-bounce { 0% { height: 5px; } 100% { height: 35px; } }
+
+        /* Controale Audio (Volum & EQ) */
+        .audio-controls { display: flex; flex-wrap: wrap; gap: 30px; justify-content: space-between; align-items: center; }
+        
+        .control-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 10px; }
+        .control-header { font-size: 0.9rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; text-align: left; display: flex; justify-content: space-between;}
+        
+        /* Sliders Styling */
+        .slider-wrapper { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 10px; }
+        .slider-wrapper i { color: #888; font-size: 1.2rem; }
+        .slider-wrapper label { font-size: 0.85rem; font-weight: bold; color: #ccc; width: 50px; text-align: left; }
+        
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 18px; width: 18px; border-radius: 50%; background: #1d8cf8; cursor: pointer; -webkit-appearance: none; margin-top: -6px;
+            box-shadow: 0 0 10px rgba(29, 140, 248, 0.5); transition: 0.2s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); background: #fff; }
+
+        /* Lista de Posturi */
+        .stations-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px;
+            max-height: 400px; overflow-y: auto; padding-right: 10px;
+        }
+        .stations-grid::-webkit-scrollbar { width: 8px; }
+        .stations-grid::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        .stations-grid::-webkit-scrollbar-thumb { background: rgba(29, 140, 248, 0.5); border-radius: 4px; }
+
+        .station-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 20px 15px; color: white; cursor: pointer; transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .station-btn i { font-size: 28px; color: #aaa; transition: 0.3s; }
+        .station-btn .st-name { font-size: 1.1rem; font-weight: bold; text-align: center; }
+        .station-btn .st-genre { font-size: 0.8rem; color: #888; text-align: center; text-transform: capitalize; }
+        .station-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255,255,255,0.3); transform: translateY(-3px); }
+        .station-btn.active { background: rgba(29, 140, 248, 0.2); border-color: #1d8cf8; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .station-btn.active i { color: #1d8cf8; }
+
+        /* Controale Play/Stop */
+        .controls { display: flex; justify-content: center; gap: 25px; margin-top: 10px; }
+        .btn-action { background: transparent; border: none; color: #fff; font-size: 3.5rem; cursor: pointer; transition: 0.3s; }
+        .btn-action:hover { transform: scale(1.1); color: #1d8cf8; text-shadow: 0 0 20px rgba(29, 140, 248, 0.5); }
+        .btn-action.stop:hover { color: #fd5d93; text-shadow: 0 0 20px rgba(253, 93, 147, 0.5); }
+
+        /* --- FOOTER --- */
+        footer { background-color: rgba(20, 20, 30, 0.95); color: #bbb; text-align: center; padding: 30px 15px; font-size: 0.9rem; margin-top: auto; }
+        footer span { color: #fff; font-weight: bold; }
+
+        @media (max-width: 900px) { 
+            h1 { font-size: 2.2rem; }
+            .navbar { display: block; text-align: left; padding: 15px 20px; }
+            .menu-toggle { display: flex; }
+            .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: rgba(0,0,0,0.1); border-radius: 4px; }
+            .nav-links.active { display: flex; }
+            .nav-links a { width: 100%; text-align: center; padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.2); }
+            .audio-controls { flex-direction: column; gap: 15px; }
+            .search-container { flex-direction: column; }
+            .search-container input { width: 100%; }
+            .search-container button { width: 100%; border-radius: 25px; height: 45px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="dynamic-bg"></div>
+<div id="bg-overlay"></div>
+
+<audio id="main-radio" preload="none" crossorigin="anonymous"></audio>
+
+<div class="header-spacer">
+    <header>
+        <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Constantin Lupu" onerror="this.src='https://via.placeholder.com/150'">
+        <h1>Constantin Lupu</h1>
+        <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+    </header>
+</div>
+
+<nav class="navbar">
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    <div class="nav-links" id="nav-links">
+        <a href="index.html">Acasă</a>
+        <a href="despre.html">Despre mine</a>
+        <a href="amintiri.html">Amintiri</a>
+        <a href="prezentare.html">Prezentare</a>
+        <a href="jocuri.html">Jocuri</a>
+        <a href="poze.html">Galerie Foto</a>
+        <a href="teatru.html">Teatru</a>
+        <a href="documente.html">Documente</a>
+        <a href="radio.html" class="active">Radio</a>
+        <a href="contact.html">Contact</a>
+        <a href="admin.html">Admin</a>
+    </div>
+</nav>
+
+<div class="radio-container">
+    <div class="radio-header">
+        <h2 class="radio-title">Radio</h2>
+        <p class="radio-desc">Panoul tău de control. Alege muzica, reglează bașii și relaxează-te.</p>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Caută un post (ex: Rock, Manele, Jazz...)">
+        <button onclick="searchRadios()" title="Caută"><i class="fas fa-search"></i></button>
+        <button onclick="loadDefaultStations()" title="Resetare listă" style="background: #fd5d93;"><i class="fas fa-undo"></i></button>
+    </div>
+
+    <div class="dj-panel" id="dj-panel">
+        
+        <div class="player-status">
+            <div class="status-info">
+                <div class="status-label">Stare Player</div>
+                <h3 class="status-station" id="current-station">Oprit - Alege un post</h3>
+            </div>
+            <div class="equalizer" id="eq-anim">
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+            </div>
+        </div>
+
+        <div class="audio-controls">
+            <div class="control-group">
+                <div class="control-header"><span>Volum Master</span> <span id="vol-val">80%</span></div>
+                <div class="slider-wrapper">
+                    <i class="fas fa-volume-down"></i>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-header"><span>Egalizator Sunet (EQ)</span></div>
+                
+                <div class="slider-wrapper">
+                    <label>Bași</label>
+                    <input type="range" id="eq-bass" class="eq-slider" min="-15" max="15" step="1" value="0">
+                </div>
+                
+                <div class="slider-wrapper">
+                    <label>Medii</label>
+                    <input type="range" id="eq-mid" class="eq-slider" min="-15" max="15" step="1" value="0">
+                </div>
+                
+                <div class="slider-wrapper">
+                    <label>Înalte</label>
+                    <input type="range" id="eq-treble" class="eq-slider" min="-15" max="15" step="1" value="0">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="stations-grid" id="stations-wrapper"></div>
+
+    <div class="controls">
+        <button class="btn-action" id="btn-playpause" onclick="togglePlay()"><i class="fas fa-play-circle"></i></button>
+        <button class="btn-action stop" onclick="stopRadio()"><i class="fas fa-stop-circle"></i></button>
+    </div>
+
+</div>
+
+<footer>
+    2026 Creator WebSite & Pasionat de Drumeții - <span>Lupu Constantin</span>. Toate drepturile rezervate.
+</footer>
+
+<script>
+    // Meniu Mobile
+    const mobileMenuBtn = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+    if(mobileMenuBtn) { mobileMenuBtn.addEventListener('click', () => navLinks.classList.toggle('active')); }
+
+    // Elemente DOM
+    const audioPlayer = document.getElementById('main-radio');
+    const playPauseBtn = document.getElementById('btn-playpause');
+    const eqAnim = document.getElementById('eq-anim');
+    const statusText = document.getElementById('current-station');
+    const djPanel = document.getElementById('dj-panel');
+    const dynamicBg = document.getElementById('dynamic-bg');
+    const stationsWrapper = document.getElementById('stations-wrapper');
+    const searchInput = document.getElementById('searchInput');
+
+    // --- LISTA NOUĂ (cu Dance Wave! și Intense Radio) ---
+    const defaultStations = [
+        { 
+            name: "Magic FM", genre: "Disco / Retro", 
+            url: "https://live.magicfm.ro:8443/magicfm.aacp", 
+            bg: "Imagini/Deshboard/avif 1.avif", color: "#b366ff", icon: "fa-compact-disc" 
+        },
+        { 
+            name: "Kiss FM", genre: "Hituri / Pop", 
+            url: "https://live.kissfm.ro:8443/kissfm.aacp", 
+            bg: "Imagini/Teatru/jpg 11.jpg", color: "#00f2c3", icon: "fa-headphones" 
+        },
+        { 
+            name: "Dance Wave!", genre: "Dance / Club", 
+            url: "https://listen.dancewave.online/128", 
+            bg: "Imagini/Excursie/avif 6.avif", color: "#ff007f", icon: "fa-bolt" 
+        },
+        { 
+            name: "Intense Radio", genre: "Electronic / Trance", 
+            url: "https://secure.intenseradio.net/radio/8000/radio.mp3", 
+            bg: "Imagini/Deshboard/avif 1.avif", color: "#ff8c00", icon: "fa-fire" 
+        }
+    ];
+
+    let currentStationsList = [];
+    let currentPlayingIndex = -1;
+
+    // --- SETUP WEBAUDIO API (Pentru Egalizator) ---
+    let audioCtx, sourceTrack, bassFilter, midFilter, trebleFilter;
+    let isAudioCtxReady = false;
+
+    function initEqualizer() {
+        if (isAudioCtxReady) return;
+        
+        try {
+            // Creăm contextul audio
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            
+            // Conectăm tag-ul <audio> la context
+            sourceTrack = audioCtx.createMediaElementSource(audioPlayer);
+
+            // Filtru Bași (Joase)
+            bassFilter = audioCtx.createBiquadFilter();
+            bassFilter.type = "lowshelf";
+            bassFilter.frequency.value = 250;
+            bassFilter.gain.value = document.getElementById('eq-bass').value;
+
+            // Filtru Medii
+            midFilter = audioCtx.createBiquadFilter();
+            midFilter.type = "peaking";
+            midFilter.frequency.value = 1000;
+            midFilter.Q.value = 1;
+            midFilter.gain.value = document.getElementById('eq-mid').value;
+
+            // Filtru Înalte
+            trebleFilter = audioCtx.createBiquadFilter();
+            trebleFilter.type = "highshelf";
+            trebleFilter.frequency.value = 4000;
+            trebleFilter.gain.value = document.getElementById('eq-treble').value;
+
+            // Conectăm cablurile virtuale: Sursă -> Bași -> Medii -> Înalte -> Boxe
+            sourceTrack.connect(bassFilter);
+            bassFilter.connect(midFilter);
+            midFilter.connect(trebleFilter);
+            trebleFilter.connect(audioCtx.destination);
+
+            isAudioCtxReady = true;
+        } catch (e) {
+            console.warn("Egalizatorul nu poate fi pornit. Probabil din cauza politicii CORS a browserului.", e);
+        }
+    }
+
+    // --- EVENIMENTE PENTRU SLIDERE (Volum și EQ) ---
+    
+    // Volum
+    const volSlider = document.getElementById('volume-slider');
+    const volText = document.getElementById('vol-val');
+    audioPlayer.volume = volSlider.value; // setare initiala
+    
+    volSlider.addEventListener('input', function() {
+        audioPlayer.volume = this.value;
+        volText.innerText = Math.round(this.value * 100) + '%';
+        this.style.setProperty('--thumb-color', '#fff'); // Efect vizual
+    });
+
+    // Slider Bași
+    document.getElementById('eq-bass').addEventListener('input', function() {
+        if(bassFilter) bassFilter.gain.value = this.value;
+    });
+    // Slider Medii
+    document.getElementById('eq-mid').addEventListener('input', function() {
+        if(midFilter) midFilter.gain.value = this.value;
+    });
+    // Slider Înalte
+    document.getElementById('eq-treble').addEventListener('input', function() {
+        if(trebleFilter) trebleFilter.gain.value = this.value;
+    });
+
+    // --- LOGICA DE AFIȘARE ȘI RULARE ---
+
+    function renderStations(stationsArray) {
+        stationsWrapper.innerHTML = ''; 
+        if(stationsArray.length === 0) {
+            stationsWrapper.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fd5d93;">Nu am găsit niciun post.</p>';
+            return;
+        }
+        stationsArray.forEach((station, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'station-btn';
+            if (index === currentPlayingIndex) btn.classList.add('active'); 
+            btn.onclick = () => playStation(index, btn);
+            const iconClass = station.icon || "fa-broadcast-tower";
+            const color = station.color || "#1d8cf8";
+            btn.innerHTML = `
+                <i class="fas ${iconClass}" style="color: ${index === currentPlayingIndex ? color : '#aaa'}"></i>
+                <span class="st-name">${station.name}</span>
+                <span class="st-genre">${station.genre || "Radio Live"}</span>
+            `;
+            stationsWrapper.appendChild(btn);
+        });
+    }
+
+    async function searchRadios() {
+        const query = searchInput.value.trim();
+        if (!query) return;
+        statusText.innerText = "Se caută...";
+        try {
+            const response = await fetch(`https://de1.api.radio-browser.info/json/stations/search?name=${encodeURIComponent(query)}&limit=12&hidebroken=true&order=clickcount&reverse=true`);
+            const data = await response.json();
+            currentStationsList = data.map(st => ({
+                name: st.name.trim(), url: st.url_resolved, genre: st.tags.split(',')[0] || "General",
+                bg: "Imagini/Deshboard/avif 1.avif", color: "#" + Math.floor(Math.random()*16777215).toString(16), icon: "fa-satellite-dish"
+            }));
+            renderStations(currentStationsList);
+            statusText.innerText = `Am găsit ${data.length} rezultate pentru "${query}".`;
+        } catch (error) {
+            statusText.innerText = "Eroare la conectarea cu serverul.";
+        }
+    }
+
+    function loadDefaultStations() {
+        searchInput.value = '';
+        currentStationsList = [...defaultStations];
+        renderStations(currentStationsList);
+        if(currentPlayingIndex === -1) statusText.innerText = "Oprit - Alege un post";
+    }
+
+    function playStation(index, btnElement) {
+        document.querySelectorAll('.station-btn').forEach(b => {
+            b.classList.remove('active');
+            b.querySelector('i').style.color = '#aaa';
+        });
+
+        btnElement.classList.add('active');
+        const station = currentStationsList[index];
+        btnElement.querySelector('i').style.color = station.color;
+
+        currentPlayingIndex = index;
+        statusText.innerText = `Se încarcă: ${station.name}...`;
+        djPanel.style.borderTopColor = station.color;
+        dynamicBg.style.backgroundImage = `url('${station.bg}')`;
+
+        // Activăm egalizatorul la prima redare
+        initEqualizer();
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+        audioPlayer.src = station.url;
+        audioPlayer.play().then(() => {
+            statusText.innerText = `Acum redă: ${station.name}`;
+            eqAnim.classList.add('playing');
+            playPauseBtn.innerHTML = '<i class="fas fa-pause-circle"></i>';
+            
+            // Colorăm egalizatorul în culoarea postului
+            document.querySelectorAll('.eq-bar').forEach(bar => bar.style.background = station.color);
+            // Colorăm butoanele slider-elor 
+            document.querySelectorAll('.eq-slider').forEach(slider => {
+                let style = document.createElement('style');
+                style.innerHTML = `input[type=range]::-webkit-slider-thumb { background: ${station.color} !important; box-shadow: 0 0 10px ${station.color} !important; }`;
+                document.head.appendChild(style);
+            });
+
+        }).catch(err => {
+            statusText.innerText = "Eroare de redare. Server indisponibil sau blocat (CORS).";
+            eqAnim.classList.remove('playing');
+        });
+    }
+
+    function togglePlay() {
+        if (currentPlayingIndex === -1) { alert("Alege un post de radio!"); return; }
+        const station = currentStationsList[currentPlayingIndex];
+
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+        if (audioPlayer.paused) {
+            audioPlayer.play();
+            eqAnim.classList.add('playing');
+            playPauseBtn.innerHTML = '<i class="fas fa-pause-circle"></i>';
+            statusText.innerText = `Acum redă: ${station.name}`;
+        } else {
+            audioPlayer.pause();
+            eqAnim.classList.remove('playing');
+            playPauseBtn.innerHTML = '<i class="fas fa-play-circle"></i>';
+            statusText.innerText = `Pauză: ${station.name}`;
+        }
+    }
+
+    function stopRadio() {
+        audioPlayer.pause();
+        audioPlayer.src = ""; 
+        currentPlayingIndex = -1;
+        statusText.innerText = "Oprit - Alege un post";
+        eqAnim.classList.remove('playing');
+        playPauseBtn.innerHTML = '<i class="fas fa-play-circle"></i>';
+        djPanel.style.borderTopColor = "#1d8cf8";
+        dynamicBg.style.backgroundImage = "url('Imagini/Deshboard/avif 1.avif')"; 
+
+        document.querySelectorAll('.station-btn').forEach(b => {
+            b.classList.remove('active'); b.querySelector('i').style.color = '#aaa';
+        });
+    }
+
+    searchInput.addEventListener('keypress', function (e) { if (e.key === 'Enter') searchRadios(); });
+    audioPlayer.addEventListener('error', () => {
+        statusText.innerText = "Eroare: Postul radio este indisponibil momentan.";
+        eqAnim.classList.remove('playing'); playPauseBtn.innerHTML = '<i class="fas fa-play-circle"></i>';
+    });
+
+    window.onload = loadDefaultStations;
+
+</script>
+
+</body>
+</html>
