@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria Foto - Constantin Lupu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #0f0f1a; --accent: #1d8cf8; --card: rgba(255, 255, 255, 0.95); } 
+        
+        * { box-sizing: border-box; font-family: 'Lato', sans-serif; overflow-wrap: break-word; word-break: break-word; } 
+        
+        body { 
+            margin: 0; 
+            color: white; 
+            background-color: var(--bg);
+            background-image: url('Imagini/Deshboard/avif 1.avif'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- HEADER NEGRU ELEGANT --- */
+        header {
+            background-color: rgba(51, 51, 51, 0.9);
+            color: white;
+            padding-top: 60px;
+            padding-bottom: 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            position: absolute;
+            top: -75px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .header-spacer { margin-top: 80px; position: relative; }
+
+        h1 {
+            font-family: 'Lato', sans-serif;
+            font-size: 3rem;
+            margin: 10px 0 5px 0;
+            font-weight: 400;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .subtitle { font-size: 1.2rem; font-weight: 300; opacity: 0.9; }
+
+        /* --- MENIU NAVIGARE --- */
+        .navbar { 
+            background-color: rgba(144, 164, 174, 0.9); 
+            padding: 10px 20px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .nav-links a { 
+            color: #333; 
+            text-decoration: none; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            font-size: 0.9rem; 
+            padding: 8px 15px;
+            display: inline-block; 
+            transition: 0.3s; 
+            border-radius: 4px;
+        }
+        .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.2); transform: scale(1.05); }
+        .nav-links a.active { color: #fff; background: rgba(0,0,0,0.1); }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+        }
+        .bar {
+            height: 3px;
+            width: 25px;
+            background-color: #333;
+            margin: 3px 0;
+            border-radius: 3px;
+            transition: 0.4s;
+        }
+
+        /* --- STILURI GALERIE (Container Poze) --- */
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; flex: 1; width: 100%; }
+        .title { text-align: center; font-size: 2.5rem; margin-bottom: 50px; text-transform: uppercase; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); } 
+
+        .albums-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        .album-card { background: var(--card); border-radius: 20px; overflow: hidden; color: #222; transition: 0.3s; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        .album-card img { width: 100%; height: 250px; object-fit: cover; }
+        .album-info { padding: 25px; text-align: center; }
+        
+        /* Adăugat stil pentru descrierea cardului (ca să se alinieze corect HTML-ul Word) */
+        .album-info-desc { margin-bottom: 15px; }
+        
+        .btn-open { background: #111; color: white; border: none; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-weight: bold; transition: 0.3s; display: inline-block; }
+        .btn-open:hover { background: var(--accent); }
+
+        /* --- JURNAL STORY MODE --- */
+        #viewer { 
+            display: none; 
+            width: 100%; 
+            flex: 1;
+            padding-bottom: 50px;
+        }
+        
+        .viewer-header { 
+            background: rgba(15, 15, 26, 0.85); 
+            padding: 20px; 
+            border-radius: 12px;
+            margin: 30px auto; 
+            max-width: 800px;
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        
+        .story-item { max-width: 800px; margin: 30px auto 50px auto; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 50px; }
+        .story-item img { width: 100%; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+        
+        .story-text { 
+            font-size: 1.1rem; 
+            line-height: 1.8; 
+            color: #f0f0f0; 
+            white-space: normal; /* Am modificat de la pre-wrap la normal ca să suporte corect tag-urile Word */
+            text-align: justify; 
+            background: rgba(0,0,0,0.6); 
+            padding: 20px; 
+            border-radius: 10px; 
+            overflow-wrap: break-word; 
+            word-wrap: break-word; 
+            
+            /* SCROLL LA TEXT PENTRU DESCRIERI LUNGI */
+            max-height: 250px; 
+            overflow-y: auto;
+        } 
+        
+        /* Design Bară Scroll pentru Descrieri */
+        .story-text::-webkit-scrollbar { width: 6px; }
+        .story-text::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .story-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 10px; }
+
+        /* --- RESPONSIVE (Telefoane) --- */
+        @media (max-width: 900px) { 
+            h1 { font-size: 2rem; }
+            .subtitle { font-size: 1rem; }
+            .navbar { display: block; text-align: left; padding: 15px 20px; min-height: 50px; }
+            .menu-toggle { display: flex; }
+            .nav-links { display: none; flex-direction: column; width: 100%; margin-top: 20px; gap: 0; background: rgba(0,0,0,0.05); border-radius: 4px; }
+            .nav-links.active { display: flex; }
+            .nav-links a { width: 100%; text-align: center; padding: 15px; margin: 0; border-bottom: 1px solid rgba(0,0,0,0.1); color: white; }
+            .nav-links a:last-child { border-bottom: none; }
+            .viewer-header { flex-direction: column; gap: 15px; margin: 20px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-spacer">
+        <header>
+            <img src="Imagini/jpg 0.0.jpg" class="profile-avatar" alt="Avatar" onerror="this.src='https://via.placeholder.com/150'">
+            <h1>Constantin Lupu</h1>
+            <div class="subtitle">Creator WebSite & Pasionat de Drumeții</div>
+        </header>
+    </div>
+
+    <nav class="navbar">
+        <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+        
+        <div class="nav-links" id="nav-links">
+            <a href="index.html">Acasă</a>
+            <a href="despre.html">Despre mine</a>
+            <a href="amintiri.html">Amintiri</a>
+            <a href="prezentare.html">Prezentare</a>
+            <a href="jocuri.html">Jocuri</a>
+            <a href="poze.html" class="active">Galerie Foto</a>
+            <a href="teatru.html">Teatru</a>
+            <a href="documente.html">Documente</a>
+            <a href="radio.html">Radio</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html">Admin</a>
+        </div>
+    </nav>
+
+    <div id="main-view" class="container">
+        <h1 class="title">Galeriile Mele</h1>
+        
+        <div id="albums-list" class="albums-grid">
+            <p style="text-align: center; grid-column: 1/-1; color: white;">Se încarcă albumele...</p>
+        </div>
+    </div>
+
+    <div id="viewer">
+        <div class="viewer-header">
+            <h2 id="album-title" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 2rem;">Nume Album</h2>
+            <button class="btn-open" style="background-color: var(--accent);" onclick="closeAlbum()"><i class="fas fa-arrow-left"></i> Înapoi la Galerii</button>
+        </div>
+        <div id="story-list"></div>
+    </div>
+
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+
+        if(mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcRKJjZF5lIUwYwc_ty_0edMJs3jv60_A",
+            authDomain: "jurnal-amintiri.firebaseapp.com",
+            projectId: "jurnal-amintiri",
+            storageBucket: "jurnal-amintiri.firebasestorage.app",
+            messagingSenderId: "417791897007",
+            appId: "1:417791897007:web:03789196260a2a3832135a",
+            databaseURL: "https://jurnal-amintiri-default-rtdb.firebaseio.com" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // VARIABILE PENTRU FUNCȚIA "VEZI MAI MULT"
+        window.pozeCurente = [];
+        window.pozeAfisate = 0;
+        const POZE_PE_PAGINA = 5; // Câte poze să apară o dată
+
+        // FUNCTIE DESCHIDERE ALBUM
+        const showAlbumView = (name) => {
+            document.getElementById('album-title').innerText = name;
+            document.getElementById('main-view').style.display = 'none';
+            document.getElementById('viewer').style.display = 'block';   
+            window.scrollTo({ top: 0, behavior: 'smooth' });             
+        }
+
+        window.openAlbum = (id, name) => {
+            document.getElementById('story-list').innerHTML = "<p style='text-align:center;'>Se încarcă pozele...</p>";
+            showAlbumView(name);
+
+            get(ref(db, `custom_albums/${id}/photos`)).then((snap) => {
+                const data = snap.val();
+                if(!data) { 
+                    document.getElementById('story-list').innerHTML = "<p style='text-align:center;'>Nicio poză încărcată în acest album.</p>"; 
+                    return; 
+                }
+                
+                // Preluăm toate pozele în Array și le sortăm (cele mai noi primele)
+                window.pozeCurente = Object.keys(data).map(k => data[k]).sort((a, b) => b.timestamp - a.timestamp);
+                window.pozeAfisate = 0;
+                document.getElementById('story-list').innerHTML = ""; // Golim "Se încarcă..."
+                
+                // Afișăm primul set de poze
+                afiseazaMaiMultePoze();
+            }).catch(error => {
+                console.error("Eroare la preluarea pozelor: ", error);
+            });
+        };
+
+        // FUNCȚIA CARE ADAUGĂ URMĂTOARELE X POZE
+        window.afiseazaMaiMultePoze = () => {
+            const list = document.getElementById('story-list');
+            
+            // Ștergem temporar butonul de "Vezi mai mult" ca să putem adăuga pozele sub el
+            const btnExistent = document.getElementById('btn-vezi-mai-mult');
+            if(btnExistent) btnExistent.remove();
+
+            // Tăiem următoarea bucată de 5 poze
+            const pozeUrmatoare = window.pozeCurente.slice(window.pozeAfisate, window.pozeAfisate + POZE_PE_PAGINA);
+            
+            // MODIFICARE AICI: Permitem formatul HTML primit din Admin
+            const html = pozeUrmatoare.map(p => {
+                const descriere = p.desc || p.description || p.story || '';
+                return `
+                <div class="story-item">
+                    <img src="${p.src}" alt="${p.title || 'Fotografie'}">
+                    ${descriere ? `<div class="story-text">${descriere}</div>` : ''}
+                </div>`
+            }).join('');
+            
+            // Le injectăm în HTML
+            list.insertAdjacentHTML('beforeend', html);
+            window.pozeAfisate += pozeUrmatoare.length;
+
+            // Dacă mai sunt poze în Array, readăugăm butonul la fundul listei
+            if(window.pozeAfisate < window.pozeCurente.length) {
+                list.insertAdjacentHTML('beforeend', `
+                    <div id="btn-vezi-mai-mult" style="text-align: center; margin-bottom: 50px;">
+                        <button class="btn-open" onclick="afiseazaMaiMultePoze()">
+                            <i class="fas fa-chevron-down"></i> Vezi mai mult
+                        </button>
+                    </div>
+                `);
+            }
+        };
+
+        // FUNCTIE INCHIDERE ALBUM
+        window.closeAlbum = () => {
+            document.getElementById('viewer').style.display = 'none';
+            document.getElementById('main-view').style.display = 'block'; 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // INCARCARE ALBUME DINAMICE LA START
+        get(ref(db, 'custom_albums')).then((snap) => {
+            const data = snap.val();
+            const container = document.getElementById('albums-list');
+            
+            if(!data) {
+                container.innerHTML = "<p style='text-align: center; grid-column: 1/-1; color: white;'>Nu există albume create momentan.</p>";
+                return;
+            }
+
+            container.innerHTML = ""; // Golim placeholder-ul
+
+            // MODIFICARE AICI: Randăm descrierea ca HTML în interiorul cardurilor
+            Object.keys(data).forEach(k => {
+                const safeName = data[k].name ? data[k].name.replace(/'/g, "\\'") : 'Album';
+                
+                const html = `
+                <div class="album-card" id="album-dinamic-${k}">
+                    <img src="${data[k].cover || 'https://via.placeholder.com/400x250?text=Fara+Coperta'}" alt="${data[k].name}">
+                    <div class="album-info">
+                        <h3 style="margin-top:0;">${data[k].name}</h3>
+                        <div class="album-info-desc">${data[k].description || ''}</div>
+                        <button class="btn-open" onclick="openAlbum('${k}', '${safeName}')">Vezi Albumul</button>
+                    </div>
+                </div>`;
+                
+                container.innerHTML += html;
+            });
+        }).catch(error => {
+            console.error("Eroare la preluarea albumelor: ", error);
+        });
+    </script>
+</body>
+</html>
